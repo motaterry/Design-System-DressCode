@@ -46,9 +46,11 @@ npm i -g vercel
 vercel --prod
 ```
 
-## Live Preview
+## 🌐 Live Preview
 
-🌐 **Live Demo**: [View on Vercel](https://ds-control-center.vercel.app)
+**[View Live Demo →](https://ds-control-center.vercel.app)**
+
+Interactive color wheel with real-time UI updates. Try dragging the color wheel to see all components update instantly!
 
 ## Project Structure
 
