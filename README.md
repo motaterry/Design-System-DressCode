@@ -25,6 +25,31 @@ npm run build
 
 Open [http://localhost:3000](http://localhost:3000) to see the dashboard.
 
+## Deployment
+
+### Deploy to Vercel
+
+The easiest way to deploy is using Vercel's GitHub integration:
+
+1. Go to [vercel.com](https://vercel.com) and sign in with your GitHub account
+2. Click "Add New Project"
+3. Import the repository: `motaterry/ds-control-center`
+4. Vercel will automatically detect Next.js and configure the project
+5. Click "Deploy"
+
+Your app will be live at `https://ds-control-center.vercel.app` (or your custom domain).
+
+Alternatively, deploy using Vercel CLI:
+
+```bash
+npm i -g vercel
+vercel --prod
+```
+
+## Live Preview
+
+🌐 **Live Demo**: [View on Vercel](https://ds-control-center.vercel.app)
+
 ## Project Structure
 
 ```
