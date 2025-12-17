@@ -59,7 +59,7 @@ export function SidebarNav() {
               href={item.href}
               onClick={() => setActiveItem(item.href)}
               className={cn(
-                "flex-1 flex items-center h-full px-4 text-sm transition-all duration-200 ease-out hover:translate-x-1 active:scale-[0.98]",
+                "flex-1 flex items-center h-full px-4 text-sm transition-all duration-200 ease-out hover:translate-x-1 cursor-pointer",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
                 isActive
                   ? isDark

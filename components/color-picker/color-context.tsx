@@ -24,6 +24,7 @@ interface ColorContextType {
   theme: ColorTheme
   updatePrimaryColor: (hue: number, saturation?: number, lightness?: number) => void
   updatePrimaryFromHex: (hex: string) => void
+  updateComplementaryFromHex: (hex: string) => void
   resetColors: () => void
 }
 
@@ -102,6 +103,14 @@ export function ColorProvider({ children }: { children: React.ReactNode }) {
     [updatePrimaryColor]
   )
 
+  const updateComplementaryFromHex = useCallback(
+    (hex: string) => {
+      const hsl = hexToHsl(hex)
+      setComplementary({ h: hsl.h, s: hsl.s, l: hsl.l })
+    },
+    []
+  )
+
   const resetColors = useCallback(() => {
     setPrimary(DEFAULT_PRIMARY)
     setComplementary(DEFAULT_COMPLEMENTARY)
@@ -109,7 +118,7 @@ export function ColorProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ColorContext.Provider
-      value={{ theme, updatePrimaryColor, updatePrimaryFromHex, resetColors }}
+      value={{ theme, updatePrimaryColor, updatePrimaryFromHex, updateComplementaryFromHex, resetColors }}
     >
       {children}
     </ColorContext.Provider>

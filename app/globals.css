@@ -68,6 +68,10 @@
   --color-primary-hover: hsl(var(--primary-h), var(--primary-s), var(--primary-l-hover));
   --comp-l-hover: min(100%, calc(var(--comp-l) + 15%));
   --color-complementary-hover: hsl(var(--comp-h), var(--comp-s), var(--comp-l-hover));
+  
+  /* Focus visible color - Dark Mode (darker tone for better contrast) */
+  --primary-l-focus: max(0%, calc(var(--primary-l) - 20%));
+  --color-primary-focus: hsl(var(--primary-h), var(--primary-s), var(--primary-l-focus));
 }
 
 [data-theme="light"] {
@@ -111,6 +115,10 @@
   --color-primary-hover: hsl(var(--primary-h), var(--primary-s), var(--primary-l-hover));
   --comp-l-hover: max(0%, calc(var(--comp-l) - 15%));
   --color-complementary-hover: hsl(var(--comp-h), var(--comp-s), var(--comp-l-hover));
+  
+  /* Focus visible color - Light Mode (lighter tone for better contrast) */
+  --primary-l-focus: min(100%, calc(var(--primary-l) + 15%));
+  --color-primary-focus: hsl(var(--primary-h), var(--primary-s), var(--primary-l-focus));
 }
 
 body {
@@ -120,9 +128,17 @@ body {
 }
 
 /* Enhanced focus styles for accessibility */
+/* Use darker tone in dark mode, lighter tone in light mode for better contrast */
 *:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--color-primary-focus);
   outline-offset: 2px;
+}
+
+/* Inputs use ring instead of outline to avoid double indicators */
+input:focus-visible,
+textarea:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
 }
 
 /* Smooth transitions for color changes - scoped to elements that need them */
@@ -204,10 +220,55 @@ a,
   --color-text-disabled: hsl(var(--text-disabled));
   --color-primary-darker: var(--color-primary-darker);
   --color-primary-hover: var(--color-primary-hover);
+  --color-primary-focus: var(--color-primary-focus);
   --color-complementary-hover: var(--color-complementary-hover);
 }
 
 /* Recharts bar hover styles - transitions handled by component */
 .recharts-rectangle {
   transition: fill 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Color input - remove all outlines, borders, and shadows */
+input[type="color"] {
+  outline: none !important;
+  outline-offset: 0 !important;
+  outline-width: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+input[type="color"]:focus,
+input[type="color"]:focus-visible,
+input[type="color"]:active {
+  outline: none !important;
+  outline-offset: 0 !important;
+  outline-width: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Remove borders from WebKit color swatch */
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0 !important;
+  border: none !important;
+  outline: none !important;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: none !important;
+  border-radius: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove borders from Firefox color swatch */
+input[type="color"]::-moz-color-swatch {
+  border: none !important;
+  border-radius: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
 }

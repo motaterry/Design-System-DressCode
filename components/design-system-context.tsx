@@ -19,10 +19,15 @@ export function DesignSystemProvider({ children }: { children: React.ReactNode }
   const [borderRadius, setBorderRadiusState] = useState<number>(8)
 
   // Load from localStorage after hydration (client-side only)
+  // Note: Default is always "auto" - only load saved value if user explicitly set it
   useEffect(() => {
     const savedButtonTextColor = localStorage.getItem("buttonTextColor") as ButtonTextColor
+    // Only load saved value if it exists and is valid, otherwise keep default "auto"
     if (savedButtonTextColor && (savedButtonTextColor === "dark" || savedButtonTextColor === "light" || savedButtonTextColor === "auto")) {
       setButtonTextColorState(savedButtonTextColor)
+    } else {
+      // Ensure default is "auto" if no valid saved value
+      setButtonTextColorState("auto")
     }
 
     const savedBorderRadius = localStorage.getItem("borderRadius")

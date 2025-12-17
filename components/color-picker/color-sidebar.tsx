@@ -6,7 +6,7 @@ import { ColorWheel } from "./color-wheel"
 import { useColorTheme } from "./color-context"
 import { useTheme } from "@/components/theme-context"
 import { useDesignSystem } from "@/components/design-system-context"
-import { hslToHex, formatHsl, getContrastRatio, getAccessibleTextColor } from "@/lib/color-utils"
+import { hslToHex, formatHsl, getContrastRatio, getAccessibleTextColor, normalizeHex } from "@/lib/color-utils"
 import { ChevronDown, Moon, Type, SquareIcon } from "lucide-react"
 import { useToast } from "@/components/ui/toast"
 import { cn } from "@/lib/utils"
@@ -54,9 +54,10 @@ function BorderRadiusIcon({ isDark }: { isDark: boolean }) {
 }
 
 export function ColorSidebar() {
-  const { theme } = useColorTheme()
+  const { theme, updatePrimaryFromHex, updateComplementaryFromHex } = useColorTheme()
   const { mode, setMode } = useTheme()
   const { buttonTextColor, setButtonTextColor, borderRadius, setBorderRadius } = useDesignSystem()
+  const { addToast } = useToast()
   const [expanded, setExpanded] = useState({
     tints: false,
     shades: false,
@@ -64,22 +65,136 @@ export function ColorSidebar() {
     neutralDarker: false,
   })
   const [isLogoStuck, setIsLogoStuck] = useState(false)
-  const logoRef = useRef<HTMLDivElement>(null)
-  const sidebarRef = useRef<HTMLDivElement>(null)
-  const sentinelRef = useRef<HTMLDivElement>(null)
-
+  const [hasScrolled, setHasScrolled] = useState(false)
+  
   const primaryHex = hslToHex(theme.primary.h, theme.primary.s, theme.primary.l)
   const compHex = hslToHex(
     theme.complementary.h,
     theme.complementary.s,
     theme.complementary.l
   )
+  
+  const [customHexInput, setCustomHexInput] = useState(() => primaryHex)
+  const [customCompHexInput, setCustomCompHexInput] = useState(() => compHex)
+  const [isValidHex, setIsValidHex] = useState(true)
+  const [isValidCompHex, setIsValidCompHex] = useState(true)
+  const logoRef = useRef<HTMLDivElement>(null)
+  const sidebarRef = useRef<HTMLDivElement>(null)
+  const sentinelRef = useRef<HTMLDivElement>(null)
 
   const toggleSection = (section: keyof typeof expanded) => {
     setExpanded((prev) => ({ ...prev, [section]: !prev[section] }))
   }
 
   const isDark = mode === "dark"
+
+  // Sync custom hex input when color changes externally (from wheel)
+  useEffect(() => {
+    setCustomHexInput(primaryHex)
+    setIsValidHex(true)
+  }, [primaryHex])
+
+  useEffect(() => {
+    setCustomCompHexInput(compHex)
+    setIsValidCompHex(true)
+  }, [compHex])
+
+  // Handlers for custom brand color input
+  const handleCustomColorInput = (value: string) => {
+    setCustomHexInput(value)
+    // Don't validate while typing - only on blur
+    if (value === "") {
+      setIsValidHex(true)
+    }
+  }
+
+  const handleCustomColorBlur = () => {
+    if (!customHexInput.trim()) {
+      setCustomHexInput(primaryHex)
+      return
+    }
+
+    const normalized = normalizeHex(customHexInput)
+    if (!normalized) {
+      setIsValidHex(false)
+      addToast({
+        title: "Invalid color",
+        description: "Please enter a valid hex color (e.g., #FF5733 or FF5733)",
+        variant: "error",
+        duration: 3000,
+      })
+      return
+    }
+
+    updatePrimaryFromHex(normalized)
+    setCustomHexInput(normalized)
+    setIsValidHex(true)
+    addToast({
+      title: "Color updated!",
+      description: `Brand color set to ${normalized}`,
+      variant: "success",
+      duration: 2000,
+    })
+  }
+
+  const handleCustomColorKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault()
+      handleCustomColorBlur()
+    } else if (e.key === "Escape") {
+      setCustomHexInput(primaryHex)
+      setIsValidHex(true)
+      e.currentTarget.blur()
+    }
+  }
+
+  // Handlers for complementary color input
+  const handleCompColorInput = (value: string) => {
+    setCustomCompHexInput(value)
+    if (value === "") {
+      setIsValidCompHex(true)
+    }
+  }
+
+  const handleCompColorBlur = () => {
+    if (!customCompHexInput.trim()) {
+      setCustomCompHexInput(compHex)
+      return
+    }
+
+    const normalized = normalizeHex(customCompHexInput)
+    if (!normalized) {
+      setIsValidCompHex(false)
+      addToast({
+        title: "Invalid color",
+        description: "Please enter a valid hex color (e.g., #FF5733 or FF5733)",
+        variant: "error",
+        duration: 3000,
+      })
+      return
+    }
+
+    updateComplementaryFromHex(normalized)
+    setCustomCompHexInput(normalized)
+    setIsValidCompHex(true)
+    addToast({
+      title: "Color updated!",
+      description: `Complementary color set to ${normalized}`,
+      variant: "success",
+      duration: 2000,
+    })
+  }
+
+  const handleCompColorKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault()
+      handleCompColorBlur()
+    } else if (e.key === "Escape") {
+      setCustomCompHexInput(compHex)
+      setIsValidCompHex(true)
+      e.currentTarget.blur()
+    }
+  }
 
   // Detect when logo is stuck at the top using IntersectionObserver (more performant)
   useEffect(() => {
@@ -90,9 +205,15 @@ export function ColorSidebar() {
     let hasBeenStuck = false
 
     const checkScrollPosition = () => {
+      const scrollTop = sidebar.scrollTop
+      
+      // Track if user has scrolled at all
+      if (scrollTop > 10 && !hasScrolled) {
+        setHasScrolled(true)
+      }
+      
       if (!hasBeenStuck) return // Only check if we've been stuck
       
-      const scrollTop = sidebar.scrollTop
       // Only unstick when back at the very top
       if (scrollTop <= 10) {
         hasBeenStuck = false
@@ -169,12 +290,14 @@ export function ColorSidebar() {
           className={cn(
             "px-8 pb-4 pt-8 rounded-t-3xl",
             isLogoStuck && "sticky z-10 border-b",
-            isLogoStuck && (isDark ? 'border-white/50' : 'border-gray-300'),
-            isDark ? 'bg-black' : 'bg-white'
+            isLogoStuck && (isDark ? 'border-white/50' : 'border-gray-300')
           )}
           style={{
             willChange: isLogoStuck ? 'transform' : 'auto',
             transform: 'translateZ(0)',
+            backgroundColor: isDark ? "rgba(0, 0, 0, 0.6)" : "rgba(255, 255, 255, 0.7)",
+            backdropFilter: "blur(4px)",
+            WebkitBackdropFilter: "blur(4px)",
             ...(isLogoStuck && { top: 'var(--logo-sticky-offset)' })
           }}
         >
@@ -198,9 +321,7 @@ export function ColorSidebar() {
             </p>
             
             {/* Author credit line */}
-            <div className={`border-t pt-2 flex justify-end ${
-              isDark ? 'border-white/50' : 'border-gray-300'
-            }`}>
+            <div className="flex justify-end">
               <span 
                 className={`text-[10px] lowercase tracking-[0.5px] italic ${
                   isDark ? 'text-white' : 'text-gray-900'
@@ -217,8 +338,150 @@ export function ColorSidebar() {
         <div className={`h-px w-full ${isDark ? 'bg-white/50' : 'bg-gray-300'}`} />
 
         {/* Color Wheel Section */}
-        <div className="flex flex-col gap-[42px] items-center px-8">
+        <div className="flex flex-col gap-[42px] items-center px-8 py-8">
           <ColorWheel />
+          
+          {/* Custom Brand Color Input Section */}
+          <div className="flex flex-col gap-4 w-full">
+            {/* Primary Color Input */}
+            <div className="flex flex-col gap-2">
+              <label className={`text-sm font-semibold leading-5 ${
+                isDark ? 'text-[#bbb]' : 'text-gray-600'
+              }`}>
+                Primary Color
+              </label>
+              <div className="flex gap-3 items-center">
+                <div className="flex-1 relative">
+                  <input
+                    type="text"
+                    placeholder="#FF5733"
+                    value={customHexInput}
+                    onChange={(e) => handleCustomColorInput(e.target.value)}
+                    onBlur={handleCustomColorBlur}
+                    onKeyDown={handleCustomColorKeyDown}
+                    onFocus={(e) => {
+                      e.target.style.outline = 'none'
+                      e.target.style.outlineOffset = '0'
+                      e.target.style.boxShadow = 'none'
+                    }}
+                    style={{
+                      outline: 'none !important',
+                      outlineOffset: '0 !important',
+                      boxShadow: 'none !important',
+                    }}
+                    className={`w-full h-10 px-4 rounded-lg border font-mono text-sm transition-colors ${
+                      isDark
+                        ? 'bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/50 focus:bg-white/10'
+                        : 'bg-gray-50 border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-gray-500 focus:bg-white'
+                    } ${!isValidHex && customHexInput ? 'border-red-500 focus:border-red-600' : ''}`}
+                    aria-label="Enter primary color hex code"
+                  />
+                  {!isValidHex && customHexInput && (
+                    <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs ${
+                      isDark ? 'text-red-400' : 'text-red-600'
+                    }`}>
+                      Invalid
+                    </span>
+                  )}
+                </div>
+                <div className="relative">
+                  <input
+                    type="color"
+                    value={primaryHex}
+                    onChange={(e) => {
+                      updatePrimaryFromHex(e.target.value)
+                      setCustomHexInput(e.target.value)
+                    }}
+                    style={{
+                      backgroundColor: primaryHex,
+                      borderRadius: '0',
+                      padding: '0',
+                      margin: '0',
+                      width: '40px',
+                      height: '40px',
+                      cursor: 'pointer',
+                    }}
+                    className="cursor-pointer"
+                    title="Pick primary color visually"
+                    aria-label="Visual primary color picker"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Complementary Color Input */}
+            <div className="flex flex-col gap-2">
+              <label className={`text-sm font-semibold leading-5 ${
+                isDark ? 'text-[#bbb]' : 'text-gray-600'
+              }`}>
+                Complementary Color
+              </label>
+              <div className="flex gap-3 items-center">
+                <div className="flex-1 relative">
+                  <input
+                    type="text"
+                    placeholder="#5733FF"
+                    value={customCompHexInput}
+                    onChange={(e) => handleCompColorInput(e.target.value)}
+                    onBlur={handleCompColorBlur}
+                    onKeyDown={handleCompColorKeyDown}
+                    onFocus={(e) => {
+                      e.target.style.outline = 'none'
+                      e.target.style.outlineOffset = '0'
+                      e.target.style.boxShadow = 'none'
+                    }}
+                    style={{
+                      outline: 'none !important',
+                      outlineOffset: '0 !important',
+                      boxShadow: 'none !important',
+                    }}
+                    className={`w-full h-10 px-4 rounded-lg border font-mono text-sm transition-colors ${
+                      isDark
+                        ? 'bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/50 focus:bg-white/10'
+                        : 'bg-gray-50 border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-gray-500 focus:bg-white'
+                    } ${!isValidCompHex && customCompHexInput ? 'border-red-500 focus:border-red-600' : ''}`}
+                    aria-label="Enter complementary color hex code"
+                  />
+                  {!isValidCompHex && customCompHexInput && (
+                    <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs ${
+                      isDark ? 'text-red-400' : 'text-red-600'
+                    }`}>
+                      Invalid
+                    </span>
+                  )}
+                </div>
+                <div className="relative">
+                  <input
+                    type="color"
+                    value={compHex}
+                    onChange={(e) => {
+                      updateComplementaryFromHex(e.target.value)
+                      setCustomCompHexInput(e.target.value)
+                    }}
+                    style={{
+                      backgroundColor: compHex,
+                      borderRadius: '0',
+                      padding: '0',
+                      margin: '0',
+                      width: '40px',
+                      height: '40px',
+                      cursor: 'pointer',
+                    }}
+                    className="cursor-pointer"
+                    title="Pick complementary color visually"
+                    aria-label="Visual complementary color picker"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Helper text */}
+            <p className={`text-xs ${
+              isDark ? 'text-white/50' : 'text-gray-500'
+            }`}>
+              Type a hex code or use the color picker
+            </p>
+          </div>
           
           {/* Color Info Cards */}
           <div className="flex flex-col gap-[21px] w-full">
@@ -233,7 +496,7 @@ export function ColorSidebar() {
             <div className={`h-px w-full ${isDark ? 'border-t border-white/50' : 'border-t border-gray-300'}`} />
             
             <ColorInfoCard
-              label="Complementary"
+              label="Secondary"
               hex={compHex}
               hsl={formatHsl(
                 theme.complementary.h,
@@ -249,10 +512,12 @@ export function ColorSidebar() {
         <div className={`h-px w-full ${isDark ? 'bg-white/50' : 'bg-gray-300'}`} />
 
         {/* Control Sections Container - Mode, Button Text, Border Radius, Palettes */}
-        <div className="flex flex-col px-8" style={{ gap: 'var(--section-gap)' }}>
+        {/* Nielsen's Heuristic #4: Consistency & Standards - Using consistent 8px grid spacing */}
+        {/* Nielsen's Heuristic #8: Aesthetic & Minimalist Design - Clear visual hierarchy */}
+        <div className="flex flex-col gap-8 px-8">
           {/* Mode Toggle Section */}
-          <div className="flex flex-col gap-4">
-          <div className="flex gap-2 items-center px-1">
+          <div className="flex flex-col gap-3">
+            <div className="flex gap-2.5 items-center">
             <ModeIcon isDark={isDark} />
             <span className={`text-lg font-bold leading-[26px] tracking-[-0.04px] ${
               isDark ? 'text-[#bbb]' : 'text-gray-600'
@@ -264,7 +529,7 @@ export function ColorSidebar() {
           <div className="flex items-stretch w-full">
             <button
               onClick={() => setMode("dark")}
-              className={`flex-1 h-12 flex items-center justify-center rounded-l-lg transition-all duration-200 ease-out hover:scale-[1.02] active:scale-[0.98] ${
+              className={`flex-1 h-12 flex items-center justify-center rounded-l-lg transition-all duration-200 ease-out cursor-pointer ${
                 mode === "dark"
                   ? isDark 
                     ? "bg-white/10 border border-r-0 border-white/50" 
@@ -286,7 +551,7 @@ export function ColorSidebar() {
             </button>
             <button
               onClick={() => setMode("light")}
-              className={`flex-1 h-12 flex items-center justify-center rounded-r-lg transition-all duration-200 ease-out hover:scale-[1.02] active:scale-[0.98] ${
+              className={`flex-1 h-12 flex items-center justify-center rounded-r-lg transition-all duration-200 ease-out cursor-pointer ${
                 mode === "light"
                   ? isDark
                     ? "bg-white/10 border border-white/50"
@@ -310,8 +575,8 @@ export function ColorSidebar() {
           </div>
 
           {/* Button Text Color Section */}
-          <div className="flex flex-col gap-4">
-          <div className="flex gap-2 items-center px-1">
+          <div className="flex flex-col gap-3">
+            <div className="flex gap-2.5 items-center">
             <TextColorIcon isDark={isDark} />
             <span className={`text-lg font-bold leading-[26px] tracking-[-0.04px] ${
               isDark ? 'text-[#bbb]' : 'text-gray-600'
@@ -324,7 +589,7 @@ export function ColorSidebar() {
           <div className="flex items-stretch w-full">
             <button
               onClick={() => setButtonTextColor("auto")}
-              className={`flex-1 h-12 flex items-center justify-center rounded-l-lg transition-all duration-200 ease-out hover:scale-[1.02] active:scale-[0.98] ${
+              className={`flex-1 h-12 flex items-center justify-center rounded-l-lg transition-all duration-200 ease-out cursor-pointer ${
                 buttonTextColor === "auto"
                   ? isDark 
                     ? "bg-white/10 border border-r-0 border-white/50" 
@@ -346,7 +611,7 @@ export function ColorSidebar() {
             </button>
             <button
               onClick={() => setButtonTextColor("dark")}
-              className={`flex-1 h-12 flex items-center justify-center transition-all duration-200 ease-out hover:scale-[1.02] active:scale-[0.98] ${
+              className={`flex-1 h-12 flex items-center justify-center transition-all duration-200 ease-out cursor-pointer ${
                 buttonTextColor === "dark"
                   ? isDark 
                     ? "bg-white/10 border border-r-0 border-white/50" 
@@ -368,7 +633,7 @@ export function ColorSidebar() {
             </button>
             <button
               onClick={() => setButtonTextColor("light")}
-              className={`flex-1 h-12 flex items-center justify-center rounded-r-lg transition-all duration-200 ease-out hover:scale-[1.02] active:scale-[0.98] ${
+              className={`flex-1 h-12 flex items-center justify-center rounded-r-lg transition-all duration-200 ease-out cursor-pointer ${
                 buttonTextColor === "light"
                   ? isDark
                     ? "bg-white/10 border border-white/50"
@@ -392,7 +657,7 @@ export function ColorSidebar() {
           
           {/* Contrast info display when Auto is selected */}
           {buttonTextColor === "auto" && (
-            <div className={`text-xs px-3 py-2 rounded-md ${
+              <div className={`text-xs px-3 py-2.5 rounded-lg mt-1 ${
               isDark ? 'bg-white/5 text-[#bbb]' : 'bg-gray-100 text-gray-600'
             }`}>
               <div className="flex justify-between items-center">
@@ -401,7 +666,7 @@ export function ColorSidebar() {
                   {getAccessibleTextColor(primaryHex) === "dark" ? "Black" : "White"}
                 </span>
               </div>
-              <div className="flex justify-between items-center mt-1">
+                <div className="flex justify-between items-center mt-1.5">
                 <span>Contrast ratio:</span>
                 <span className={`font-mono font-semibold ${
                   getContrastRatio(
@@ -422,8 +687,8 @@ export function ColorSidebar() {
           </div>
 
           {/* Border Radius Section */}
-          <div className="flex flex-col gap-4">
-          <div className="flex gap-2 items-center px-1">
+          <div className="flex flex-col gap-3">
+            <div className="flex gap-2.5 items-center">
             <BorderRadiusIcon isDark={isDark} />
             <span className={`text-lg font-bold leading-[26px] tracking-[-0.04px] ${
               isDark ? 'text-[#bbb]' : 'text-gray-600'
@@ -432,7 +697,7 @@ export function ColorSidebar() {
             </span>
           </div>
           
-          <div className="relative group">
+            <div className="relative group py-1">
             <div 
               className={`h-[7px] rounded-full w-full transition-all duration-200 ease-out group-hover:shadow-sm ${
                 isDark ? 'bg-[rgba(217,217,217,0.1)] border border-white/50 group-hover:border-white/70' : 'bg-gray-200 border border-gray-300 group-hover:border-gray-400'
@@ -463,8 +728,8 @@ export function ColorSidebar() {
           </div>
           </div>
 
-          {/* Palette Sections */}
-          <div className="flex flex-col gap-12 pb-8">
+          {/* Palette Sections - Separated by larger gap for visual hierarchy */}
+          <div className="flex flex-col gap-8 pt-4 pb-8">
           <PaletteSection
             title="Lighter Tones (Tints)"
             colors={theme.tints}
@@ -496,6 +761,40 @@ export function ColorSidebar() {
           </div>
         </div>
       </div>
+      
+      {/* Scroll indicator - shows when user hasn't scrolled yet */}
+      {!hasScrolled && (
+        <div 
+          className="fixed left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 pointer-events-none z-20 px-4 py-2 rounded-lg backdrop-blur-sm"
+          style={{ 
+            bottom: '16px',
+            animation: 'fadeIn 0.5s ease-out',
+            backgroundColor: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.7)',
+          }}
+        >
+          <span className={`text-xs font-medium ${isDark ? 'text-white/80' : 'text-gray-600'}`}>
+            More
+          </span>
+          <div 
+            className={`${isDark ? 'text-white/80' : 'text-gray-600'}`}
+            style={{
+              animation: 'bounceArrow 1.5s ease-in-out infinite',
+            }}
+          >
+            <ChevronDown size={20} />
+          </div>
+          <style jsx>{`
+            @keyframes bounceArrow {
+              0%, 100% { transform: translateY(0); opacity: 1; }
+              50% { transform: translateY(6px); opacity: 0.6; }
+            }
+            @keyframes fadeIn {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+          `}</style>
+        </div>
+      )}
     </div>
   )
 }
@@ -556,7 +855,7 @@ function ColorInfoCard({
             <span className={isDark ? "text-[#c5c1bd]" : "text-gray-600"}>HEX</span>
             <button
               onClick={() => copyToClipboard(hex)}
-              className={`hover:opacity-80 transition-colors font-mono ${
+              className={`hover:opacity-80 transition-colors font-mono cursor-pointer ${
                 isDark ? "text-white" : "text-gray-900"
               }`}
               aria-label={`Copy ${label} hex value: ${hex}`}
@@ -568,7 +867,7 @@ function ColorInfoCard({
             <span className={isDark ? "text-[#c5c1bd]" : "text-gray-600"}>HSL</span>
             <button
               onClick={() => copyToClipboard(hsl)}
-              className={`hover:opacity-80 transition-colors font-mono ${
+              className={`hover:opacity-80 transition-colors font-mono cursor-pointer ${
                 isDark ? "text-white" : "text-gray-900"
               }`}
               aria-label={`Copy ${label} HSL value: ${hsl}`}
@@ -624,8 +923,10 @@ function PaletteSection({
         onClick={onToggle}
         aria-expanded={isExpanded}
         aria-controls={`palette-section-${title.toLowerCase().replace(/\s+/g, "-")}`}
-        className={`w-full flex items-center justify-between pl-4 pr-2 py-1 rounded-lg transition-all duration-200 ease-out hover:scale-[1.01] active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] ${
-          isDark ? "hover:bg-white/5" : "hover:bg-gray-200"
+        className={`w-full flex items-center justify-between pl-4 pr-2 py-1 rounded-lg transition-all duration-200 ease-out cursor-pointer focus:outline-none focus:ring-1 ${
+          isDark 
+            ? "hover:bg-white/5 focus:ring-white/30" 
+            : "hover:bg-gray-200 focus:ring-gray-400"
         }`}
       >
         <span className={`text-lg leading-[26px] tracking-[-0.04px] ${
@@ -654,10 +955,10 @@ function PaletteSection({
               key={index}
               onClick={() => copyToClipboard(color)}
               aria-label={`Copy color ${color} to clipboard`}
-              className={`backdrop-blur-sm border rounded-xl p-3 flex flex-col gap-2 cursor-pointer transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] ${
+              className={`backdrop-blur-sm border rounded-xl p-3 flex flex-col gap-2 cursor-pointer transition-all duration-200 ease-out hover:shadow-lg focus:outline-none focus:ring-1 ${
                 isDark 
-                  ? "bg-neutral-800/70 border-neutral-700/30" 
-                  : "bg-neutral-50 border-neutral-300/50"
+                  ? "bg-neutral-800/70 border-neutral-700/30 focus:ring-white/30" 
+                  : "bg-neutral-50 border-neutral-300/50 focus:ring-gray-400"
               }`}
             >
               <div

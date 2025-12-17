@@ -68,7 +68,7 @@ export function CalendarWidget() {
           <button
             onClick={goToPreviousMonth}
             aria-label="Previous month"
-            className={`p-1 rounded transition-all duration-200 ease-out hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 ${
+            className={`p-1 rounded transition-all duration-200 ease-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 ${
               isDark 
                 ? "hover:bg-white/10 focus:ring-offset-slate-800" 
                 : "hover:bg-gray-200 focus:ring-offset-white"
@@ -86,7 +86,7 @@ export function CalendarWidget() {
           <button
             onClick={goToNextMonth}
             aria-label="Next month"
-            className={`p-1 rounded transition-all duration-200 ease-out hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 ${
+            className={`p-1 rounded transition-all duration-200 ease-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 ${
               isDark 
                 ? "hover:bg-white/10 focus:ring-offset-slate-800" 
                 : "hover:bg-gray-200 focus:ring-offset-white"
@@ -117,9 +117,9 @@ export function CalendarWidget() {
           {days.map((day, index) => (
             <button
               key={index}
-              className={`aspect-square flex items-center justify-center text-sm rounded transition-all duration-200 ease-out hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] ${
+              className={`aspect-square flex items-center justify-center text-sm rounded transition-all duration-200 ease-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] ${
                 day === selectedDay
-                  ? "bg-[var(--color-primary)] font-semibold scale-105"
+                  ? "bg-[var(--color-primary)] font-semibold"
                   : day
                     ? isDark
                       ? "text-white/80 hover:bg-white/10 cursor-pointer"

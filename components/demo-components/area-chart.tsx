@@ -101,15 +101,47 @@ export function AreaChartDemo() {
               }}
             />
             <Tooltip
-              contentStyle={{
-                backgroundColor: isDark 
-                  ? "rgba(30, 41, 59, 0.95)" 
-                  : "rgba(255, 255, 255, 0.95)",
-                border: isDark 
-                  ? "1px solid rgba(255,255,255,0.1)" 
-                  : "1px solid rgba(0,0,0,0.1)",
-                borderRadius: "8px",
-                color: isDark ? "white" : "black",
+              content={({ active, payload, label }) => {
+                if (!active || !payload?.length) return null
+                const primaryColor = isDark 
+                  ? "hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) + 15%))"
+                  : "hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 15%))"
+                const compColor = isDark
+                  ? "hsl(var(--comp-h), var(--comp-s), calc(var(--comp-l) + 15%))"
+                  : "hsl(var(--comp-h), var(--comp-s), calc(var(--comp-l) - 15%))"
+                return (
+                  <div style={{
+                    backgroundColor: isDark ? "rgba(0, 0, 0, 0.6)" : "rgba(255, 255, 255, 0.7)",
+                    border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.1)",
+                    borderRadius: "6px",
+                    fontSize: "11px",
+                    padding: "6px 10px",
+                    lineHeight: "1.3",
+                    backdropFilter: "blur(4px)",
+                  }}>
+                    <div style={{
+                      fontWeight: 500,
+                      marginBottom: "2px",
+                      color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)",
+                    }}>{label}</div>
+                    {payload.map((entry, index) => (
+                      <div key={index} style={{
+                        color: entry.dataKey === "value1" ? primaryColor : compColor,
+                        padding: "1px 0",
+                        fontWeight: 600,
+                      }}>
+                        {entry.dataKey === "value1" ? "Primary" : "Secondary"} : {entry.value}
+                      </div>
+                    ))}
+                  </div>
+                )
+              }}
+              cursor={{ 
+                stroke: isDark 
+                  ? "rgba(255, 255, 255, 0.2)" 
+                  : "rgba(0, 0, 0, 0.2)",
+                strokeWidth: 1,
+                strokeDasharray: "4 4"
               }}
             />
             <Area

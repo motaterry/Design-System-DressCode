@@ -150,6 +150,35 @@ export function formatHsl(h: number, s: number, l: number): string {
 }
 
 /**
+ * Validate hex color format
+ * @param hex - Hex color string (with or without #)
+ * @returns true if valid hex color
+ */
+export function isValidHex(hex: string): boolean {
+  const hexPattern = /^#?([a-f\d]{6}|[a-f\d]{3})$/i
+  return hexPattern.test(hex.trim())
+}
+
+/**
+ * Normalize hex color (add # if missing, expand 3-digit to 6-digit)
+ * @param hex - Hex color string
+ * @returns Normalized hex color or empty string if invalid
+ */
+export function normalizeHex(hex: string): string {
+  const trimmed = hex.trim()
+  if (!isValidHex(trimmed)) return ""
+  
+  let normalized = trimmed.startsWith('#') ? trimmed : `#${trimmed}`
+  
+  // Expand 3-digit hex to 6-digit
+  if (normalized.length === 4) {
+    normalized = `#${normalized[1]}${normalized[1]}${normalized[2]}${normalized[2]}${normalized[3]}${normalized[3]}`
+  }
+  
+  return normalized.toLowerCase()
+}
+
+/**
  * WCAG Accessibility Contrast Utilities
  */
 
@@ -216,4 +245,31 @@ export function meetsWCAGAA(
   // WCAG AA requires 4.5:1 for normal text, 3:1 for large text
   const threshold = isLargeText ? 3 : 4.5
   return ratio >= threshold
+}
+
+/**
+ * Adjust a color's lightness based on mode
+ * In dark mode: darken the color slightly for better contrast on dark backgrounds
+ * In light mode: lighten the color slightly for softer appearance
+ * @param hex - Color in hex format
+ * @param isDark - Whether dark mode is active
+ * @param amount - Amount to adjust (default: 15%)
+ * @returns Adjusted hex color
+ */
+export function adjustColorForMode(
+  hex: string,
+  isDark: boolean,
+  amount: number = 15
+): string {
+  const hsl = hexToHsl(hex)
+  
+  if (isDark) {
+    // In dark mode, lighten the color for better visibility
+    hsl.l = Math.min(100, hsl.l + amount)
+  } else {
+    // In light mode, lighten the color slightly  
+    hsl.l = Math.min(100, hsl.l + amount)
+  }
+  
+  return hslToHex(hsl.h, hsl.s, hsl.l)
 }

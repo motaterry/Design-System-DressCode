@@ -2,6 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { useTheme } from "@/components/theme-context"
+import { useDesignSystem } from "@/components/design-system-context"
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts"
 import { Button } from "@/components/ui/button"
 import { useState, useEffect, useRef } from "react"
@@ -18,9 +19,13 @@ const data = [
 
 export function BarChartDemo() {
   const { mode } = useTheme()
+  const { borderRadius } = useDesignSystem()
   const isDark = mode === "dark"
   const [activeFilter, setActiveFilter] = useState("7D")
   const chartRef = useRef<HTMLDivElement>(null)
+  
+  // Calculate bar corner radius based on design system setting (capped for bars)
+  const barRadius = Math.min(borderRadius, 12)
 
   // Calculate hover colors and apply to rectangles
   useEffect(() => {
@@ -38,12 +43,8 @@ export function BarChartDemo() {
     const primaryLNum = parseFloat(primaryL.replace('%', ''))
     const compLNum = parseFloat(compL.replace('%', ''))
 
-    const primaryLHover = isDark 
-      ? Math.min(100, primaryLNum + 15)
-      : Math.max(0, primaryLNum - 15)
-    const compLHover = isDark
-      ? Math.min(100, compLNum + 15)
-      : Math.max(0, compLNum - 15)
+    const primaryLHover = Math.min(100, primaryLNum + 15)
+    const compLHover = Math.min(100, compLNum + 15)
 
     const primaryHover = `hsl(${primaryH}, ${primaryS}, ${primaryLHover}%)`
     const compHover = `hsl(${compH}, ${compS}, ${compLHover}%)`
@@ -181,26 +182,56 @@ export function BarChartDemo() {
               }}
             />
             <Tooltip
-              contentStyle={{
-                backgroundColor: isDark 
-                  ? "rgba(30, 41, 59, 0.95)" 
-                  : "rgba(255, 255, 255, 0.95)",
-                border: isDark 
-                  ? "1px solid rgba(255,255,255,0.1)" 
-                  : "1px solid rgba(0,0,0,0.1)",
-                borderRadius: "8px",
-                color: isDark ? "white" : "black",
+              content={({ active, payload, label }) => {
+                if (!active || !payload?.length) return null
+                const primaryColor = isDark 
+                  ? "hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) + 15%))"
+                  : "hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 15%))"
+                const compColor = isDark
+                  ? "hsl(var(--comp-h), var(--comp-s), calc(var(--comp-l) + 15%))"
+                  : "hsl(var(--comp-h), var(--comp-s), calc(var(--comp-l) - 15%))"
+                return (
+                  <div style={{
+                    backgroundColor: isDark ? "rgba(0, 0, 0, 0.6)" : "rgba(255, 255, 255, 0.7)",
+                    border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.1)",
+                    borderRadius: "6px",
+                    fontSize: "11px",
+                    padding: "6px 10px",
+                    lineHeight: "1.3",
+                    backdropFilter: "blur(4px)",
+                  }}>
+                    <div style={{
+                      fontWeight: 500,
+                      marginBottom: "2px",
+                      color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)",
+                    }}>{label}</div>
+                    {payload.map((entry, index) => (
+                      <div key={index} style={{
+                        color: entry.dataKey === "value1" ? primaryColor : compColor,
+                        padding: "1px 0",
+                        fontWeight: 600,
+                      }}>
+                        {entry.dataKey} : {entry.value}
+                      </div>
+                    ))}
+                  </div>
+                )
+              }}
+              cursor={{ 
+                fill: isDark 
+                  ? "rgba(255, 255, 255, 0.03)" 
+                  : "rgba(0, 0, 0, 0.03)" 
               }}
             />
             <Bar
               dataKey="value1"
               fill="var(--color-primary)"
-              radius={[4, 4, 0, 0]}
+              radius={[barRadius, barRadius, 0, 0]}
             />
             <Bar
               dataKey="value2"
               fill="var(--color-complementary)"
-              radius={[4, 4, 0, 0]}
+              radius={[barRadius, barRadius, 0, 0]}
             />
           </BarChart>
         </ResponsiveContainer>
