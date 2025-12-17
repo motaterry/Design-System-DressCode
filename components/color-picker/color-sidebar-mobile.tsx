@@ -709,6 +709,7 @@ function PaletteSectionMobile({
     } catch {
       addToast({
         title: "Copy failed",
+        description: "Unable to copy to clipboard",
         variant: "error",
         duration: 3000,
       })
