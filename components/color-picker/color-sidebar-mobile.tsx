@@ -12,12 +12,13 @@ import {
   getAccessibleTextColor,
   normalizeHex,
 } from "@/lib/color-utils"
-import { ChevronDown, Palette, Settings, Layers } from "lucide-react"
+import { ChevronDown, Palette, Settings, Layers, Download } from "lucide-react"
 import { useToast } from "@/components/ui/toast"
 import { cn } from "@/lib/utils"
 import { BottomSheet } from "@/components/ui/bottom-sheet"
 import { DresscodeLogo } from "@/components/logo/dresscode-logo"
 import { Pencil } from "lucide-react"
+import { ExportModal } from "./export-modal"
 
 type TabId = "colors" | "settings" | "palettes"
 
@@ -27,7 +28,9 @@ export function ColorSidebarMobile() {
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<TabId>("colors")
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false)
   const { mode } = useTheme()
+  const { borderRadius } = useDesignSystem()
   const isDark = mode === "dark"
 
   // Track scroll position to show/hide header content
@@ -67,9 +70,39 @@ export function ColorSidebarMobile() {
             {activeTab === "colors" && <ColorsTab isDark={isDark} />}
             {activeTab === "settings" && <SettingsTab isDark={isDark} />}
             {activeTab === "palettes" && <PalettesTab isDark={isDark} />}
+            
+            {/* Export Button - shown on all tabs */}
+            <div className="pt-6 pb-8">
+              <button
+                onClick={() => setIsExportModalOpen(true)}
+                className={cn(
+                  "w-full py-3.5 px-4 font-semibold flex items-center justify-center gap-2.5",
+                  "transition-colors duration-200 ease-out",
+                  isDark 
+                    ? "bg-white text-gray-900 hover:bg-gray-100" 
+                    : "bg-gray-900 text-white hover:bg-gray-800"
+                )}
+                style={{ borderRadius: `${borderRadius}px` }}
+              >
+                <Download className="w-5 h-5" />
+                Export Theme
+              </button>
+              <p className={cn(
+                "text-xs text-center mt-2.5",
+                isDark ? "text-white/50" : "text-gray-500"
+              )}>
+                Download CSS, Tailwind & JSON tokens
+              </p>
+            </div>
           </div>
         </div>
       </BottomSheet>
+
+      {/* Export Modal */}
+      <ExportModal 
+        isOpen={isExportModalOpen} 
+        onClose={() => setIsExportModalOpen(false)} 
+      />
     </>
   )
 }
@@ -101,14 +134,14 @@ function MobileHeader({
           onClick={onOpenControls}
           aria-label="Open design controls"
           className={cn(
-            "w-12 h-12 flex items-center justify-center rounded-lg",
+            "w-10 h-10 flex items-center justify-center rounded-lg",
             "transition-colors",
             isDark
-              ? "hover:bg-white/10 text-white"
-              : "hover:bg-gray-100 text-gray-900"
+              ? "bg-white text-gray-900 hover:bg-gray-100"
+              : "bg-gray-900 text-white hover:bg-gray-800"
           )}
         >
-          <Pencil size={24} />
+          <Pencil size={20} />
         </button>
       </div>
       
@@ -572,14 +605,14 @@ function PalettesTab({ isDark }: { isDark: boolean }) {
   return (
     <div className="flex flex-col gap-4 pt-4">
       <PaletteSectionMobile
-        title="Lighter Tones (Tints)"
+        title="Lighter Tones"
         colors={theme.tints}
         isExpanded={expanded.tints}
         onToggle={() => toggleSection("tints")}
         isDark={isDark}
       />
       <PaletteSectionMobile
-        title="Darker Tones (Shades)"
+        title="Darker Tones"
         colors={theme.shades}
         isExpanded={expanded.shades}
         onToggle={() => toggleSection("shades")}
@@ -841,9 +874,9 @@ function PaletteSectionMobile({
                 style={{ backgroundColor: color }}
                 aria-hidden="true"
               />
-              <div className="flex flex-col gap-1 text-xs">
+              <div className="flex flex-col gap-1 text-xs overflow-hidden">
                 <span className={cn(
-                  "font-mono font-semibold",
+                  "font-mono font-semibold truncate",
                   isDark ? "text-white" : "text-gray-900"
                 )}>
                   {color}

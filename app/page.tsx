@@ -54,12 +54,12 @@ export default function ControlCenterPage() {
               Chart cards span full width on intermediate breakpoints to avoid dead space
             */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
-              {/* Two smaller cards stacked to match height of larger cards */}
-              <div className="flex flex-col gap-4 sm:gap-5 lg:gap-6 min-h-full">
-                <div className="flex-1 min-h-0">
+              {/* Two smaller cards stacked - hug content on mobile, share height on desktop */}
+              <div className="flex flex-col gap-4 sm:gap-5 lg:gap-6 sm:min-h-full">
+                <div className="sm:flex-1 sm:min-h-0">
                   <UserProfileCard />
                 </div>
-                <div className="flex-1 min-h-0">
+                <div className="sm:flex-1 sm:min-h-0">
                   <CalendarWidget />
                 </div>
               </div>

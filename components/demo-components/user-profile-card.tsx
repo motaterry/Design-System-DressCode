@@ -121,45 +121,38 @@ export function UserProfileCard() {
         </p>
       </div>
 
-      {/* Tags Layout - Matching exact positioning from design */}
-      <div className="flex flex-col gap-2 flex-1">
-        {/* Top row: Two tags side by side */}
-        <div className="flex gap-2">
-          <span
-            className="px-3 py-1.5 rounded-md text-xs font-medium border bg-transparent"
-            style={{ 
-              borderColor: `${tagColor}99`, // 60% opacity
-              color: tagColor 
-            }}
-            role="listitem"
-          >
-            UI UX Designer
-          </span>
-          <span
-            className="px-3 py-1.5 rounded-md text-xs font-medium border bg-transparent"
-            style={{ 
-              borderColor: `${tagColor}99`, // 60% opacity
-              color: tagColor 
-            }}
-            role="listitem"
-          >
-            Product Management
-          </span>
-        </div>
-        
-        {/* Bottom row: Single tag aligned left */}
-        <div className="flex gap-2">
-          <span
-            className="px-3 py-1.5 rounded-md text-xs font-medium border bg-transparent"
-            style={{ 
-              borderColor: `${tagColor}99`, // 60% opacity
-              color: tagColor 
-            }}
-            role="listitem"
-          >
-            AI Engineer
-          </span>
-        </div>
+      {/* Tags Layout - flex-wrap allows tags to stack when container is narrow */}
+      <div className="flex flex-wrap gap-2 flex-1 content-start">
+        <span
+          className="px-3 py-1.5 rounded-md text-xs font-medium border bg-transparent whitespace-nowrap"
+          style={{ 
+            borderColor: `${tagColor}99`, // 60% opacity
+            color: tagColor 
+          }}
+          role="listitem"
+        >
+          UI UX Designer
+        </span>
+        <span
+          className="px-3 py-1.5 rounded-md text-xs font-medium border bg-transparent whitespace-nowrap"
+          style={{ 
+            borderColor: `${tagColor}99`, // 60% opacity
+            color: tagColor 
+          }}
+          role="listitem"
+        >
+          Product Management
+        </span>
+        <span
+          className="px-3 py-1.5 rounded-md text-xs font-medium border bg-transparent whitespace-nowrap"
+          style={{ 
+            borderColor: `${tagColor}99`, // 60% opacity
+            color: tagColor 
+          }}
+          role="listitem"
+        >
+          AI Engineer
+        </span>
       </div>
     </Card>
   )
