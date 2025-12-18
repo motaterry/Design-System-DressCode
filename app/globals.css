@@ -15,7 +15,7 @@
   /* Design System Controls */
   --button-text-color: light;
   --border-radius: 8px;
-  --logo-sticky-offset: -3rem; /* Specific offset for sticky logo positioning */
+  --logo-sticky-offset: -2rem; /* Specific offset for sticky logo positioning */
   --section-gap: calc(var(--spacing) * 16); /* Consistent spacing between sidebar sections */
 
   /* Background colors - Dark Mode Default */
@@ -63,6 +63,10 @@
   --text-muted: 0 0% 50%;
   --text-disabled: 0 0% 40%;
   
+  /* Bar chart base colors - Dark Mode (same as primary/complementary) */
+  --color-primary-chart: var(--color-primary);
+  --color-complementary-chart: var(--color-complementary);
+  
   /* Bar chart hover colors - Dark Mode (lighter versions of primary/complementary) */
   --primary-l-hover: min(100%, calc(var(--primary-l) + 15%));
   --color-primary-hover: hsl(var(--primary-h), var(--primary-s), var(--primary-l-hover));
@@ -109,6 +113,12 @@
   /* Primary color darker tone for labels in light mode (20% darker) */
   --primary-l-darker: max(0%, calc(var(--primary-l) - 20%));
   --color-primary-darker: hsl(var(--primary-h), var(--primary-s), var(--primary-l-darker));
+  
+  /* Bar chart base colors - Light Mode (lighter to compensate for gradient overlay) */
+  --primary-l-chart: min(100%, calc(var(--primary-l) + 15%));
+  --color-primary-chart: hsl(var(--primary-h), var(--primary-s), var(--primary-l-chart));
+  --comp-l-chart: min(100%, calc(var(--comp-l) + 15%));
+  --color-complementary-chart: hsl(var(--comp-h), var(--comp-s), var(--comp-l-chart));
   
   /* Bar chart hover colors - Light Mode (darker versions of primary/complementary) */
   --primary-l-hover: max(0%, calc(var(--primary-l) - 15%));
@@ -271,4 +281,39 @@ input[type="color"]::-moz-color-swatch {
   border-radius: 0 !important;
   outline: none !important;
   box-shadow: none !important;
+}
+
+/* Ghost Scrollbar Styles */
+/* WebKit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--foreground) / 0.15);
+  border-radius: 100px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--foreground) / 0.3);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--foreground) / 0.15) transparent;
 }

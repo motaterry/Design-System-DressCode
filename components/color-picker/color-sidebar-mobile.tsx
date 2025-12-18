@@ -56,6 +56,7 @@ export function ColorSidebarMobile() {
         snapPoints={[45, 85, 95]}
         initialSnap={1}
         isDark={isDark}
+        showCloseButton={false}
       >
         <div className="flex flex-col h-full">
           {/* Tab Navigation */}
@@ -87,7 +88,7 @@ function MobileHeader({
     <header
       className={cn(
         "fixed top-0 left-0 right-0 z-30",
-        "flex flex-col px-8 pt-4 pb-4",
+        "flex flex-col px-4 pt-4 pb-4",
         "backdrop-blur-md transition-all duration-300",
         isDark ? "bg-black/60" : "bg-white/70",
         isDark ? "border-b border-white/10" : "border-b border-gray-200"
@@ -95,7 +96,7 @@ function MobileHeader({
     >
       {/* Top row: Logo + Edit button */}
       <div className="flex items-center justify-between">
-        <DresscodeLogo className={cn("h-8 w-auto", isDark ? "text-white" : "text-gray-900")} />
+        <DresscodeLogo className={cn("h-[18px] w-auto", isDark ? "text-white" : "text-gray-900")} />
         <button
           onClick={onOpenControls}
           aria-label="Open design controls"
@@ -155,7 +156,7 @@ export function MobileInlineTitle({ isDark }: { isDark: boolean }) {
   )
 }
 
-// Tab Bar Component
+// Tab Bar Component - using outline/border style like desktop
 function TabBar({
   activeTab,
   setActiveTab,
@@ -172,33 +173,50 @@ function TabBar({
   ]
 
   return (
-    <div
-      className={cn(
-        "flex border-b px-2",
-        isDark ? "border-white/20" : "border-gray-200"
-      )}
-    >
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => setActiveTab(tab.id)}
-          className={cn(
-            "flex-1 flex items-center justify-center gap-2 py-4 px-3",
-            "min-h-[48px] transition-colors",
-            "border-b-2 -mb-px",
-            activeTab === tab.id
-              ? isDark
-                ? "border-white text-white"
-                : "border-gray-900 text-gray-900"
-              : isDark
-              ? "border-transparent text-white/50 hover:text-white/70"
-              : "border-transparent text-gray-400 hover:text-gray-600"
-          )}
-        >
-          {tab.icon}
-          <span className="text-sm font-medium">{tab.label}</span>
-        </button>
-      ))}
+    <div className="flex items-stretch px-4 pt-2 pb-4">
+      {tabs.map((tab, index) => {
+        const isFirst = index === 0
+        const isLast = index === tabs.length - 1
+        const isSelected = activeTab === tab.id
+        
+        return (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-2 py-3 px-3",
+              "min-h-[48px] transition-all duration-200 ease-out",
+              isFirst && "rounded-l-lg",
+              isLast && "rounded-r-lg",
+              !isLast && "border-r-0",
+              isSelected
+                ? isDark
+                  ? "bg-white/10 border border-white/50"
+                  : "bg-gray-200 border border-gray-300"
+                : isDark
+                ? "bg-transparent border border-white/50"
+                : "bg-transparent border border-gray-300"
+            )}
+            aria-pressed={isSelected}
+          >
+            <span className={cn(
+              isSelected
+                ? isDark ? "text-white" : "text-gray-900"
+                : isDark ? "text-white/40" : "text-gray-400"
+            )}>
+              {tab.icon}
+            </span>
+            <span className={cn(
+              "text-sm font-bold",
+              isSelected
+                ? isDark ? "text-white" : "text-gray-900"
+                : isDark ? "text-white/40" : "text-gray-400"
+            )}>
+              {tab.label}
+            </span>
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -286,8 +304,8 @@ function ColorsTab({ isDark }: { isDark: boolean }) {
       <div className="flex flex-col gap-2">
         <label
           className={cn(
-            "text-sm font-semibold",
-            isDark ? "text-white/70" : "text-gray-600"
+            "text-sm font-semibold leading-5",
+            isDark ? "text-[#bbb]" : "text-gray-600"
           )}
         >
           Primary Color
@@ -323,8 +341,8 @@ function ColorsTab({ isDark }: { isDark: boolean }) {
       <div className="flex flex-col gap-2">
         <label
           className={cn(
-            "text-sm font-semibold",
-            isDark ? "text-white/70" : "text-gray-600"
+            "text-sm font-semibold leading-5",
+            isDark ? "text-[#bbb]" : "text-gray-600"
           )}
         >
           Complementary Color
@@ -357,7 +375,7 @@ function ColorsTab({ isDark }: { isDark: boolean }) {
       </div>
 
       {/* Color Info Cards */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-[21px]">
         <ColorInfoCardMobile
           label="Primary"
           hex={primaryHex}
@@ -365,6 +383,13 @@ function ColorsTab({ isDark }: { isDark: boolean }) {
           color={primaryHex}
           isDark={isDark}
         />
+        
+        {/* Divider between cards - matching desktop */}
+        <div className={cn(
+          "h-px w-full",
+          isDark ? "border-t border-white/50" : "border-t border-gray-300"
+        )} />
+        
         <ColorInfoCardMobile
           label="Secondary"
           hex={compHex}
@@ -381,7 +406,7 @@ function ColorsTab({ isDark }: { isDark: boolean }) {
   )
 }
 
-// Settings Tab
+// Settings Tab - using styles consistent with desktop
 function SettingsTab({ isDark }: { isDark: boolean }) {
   const { mode, setMode } = useTheme()
   const { buttonTextColor, setButtonTextColor, borderRadius, setBorderRadius } =
@@ -395,8 +420,8 @@ function SettingsTab({ isDark }: { isDark: boolean }) {
       <div className="flex flex-col gap-3">
         <span
           className={cn(
-            "text-base font-bold",
-            isDark ? "text-white/70" : "text-gray-600"
+            "text-lg font-bold leading-[26px] tracking-[-0.04px]",
+            isDark ? "text-[#bbb]" : "text-gray-600"
           )}
         >
           Mode
@@ -416,8 +441,8 @@ function SettingsTab({ isDark }: { isDark: boolean }) {
       <div className="flex flex-col gap-3">
         <span
           className={cn(
-            "text-base font-bold",
-            isDark ? "text-white/70" : "text-gray-600"
+            "text-lg font-bold leading-[26px] tracking-[-0.04px]",
+            isDark ? "text-[#bbb]" : "text-gray-600"
           )}
         >
           Button Text Color
@@ -435,18 +460,18 @@ function SettingsTab({ isDark }: { isDark: boolean }) {
         {buttonTextColor === "auto" && (
           <div
             className={cn(
-              "text-xs px-3 py-3 rounded-lg",
-              isDark ? "bg-white/5 text-white/60" : "bg-gray-100 text-gray-600"
+              "text-xs px-3 py-2.5 rounded-lg mt-1",
+              isDark ? "bg-white/5 text-[#bbb]" : "bg-gray-100 text-gray-600"
             )}
           >
-            <div className="flex justify-between">
-              <span>Current:</span>
+            <div className="flex justify-between items-center">
+              <span>Current text:</span>
               <span className="font-semibold">
                 {getAccessibleTextColor(primaryHex) === "dark" ? "Black" : "White"}
               </span>
             </div>
-            <div className="flex justify-between mt-1">
-              <span>Contrast:</span>
+            <div className="flex justify-between items-center mt-1.5">
+              <span>Contrast ratio:</span>
               <span
                 className={cn(
                   "font-mono font-semibold",
@@ -478,8 +503,8 @@ function SettingsTab({ isDark }: { isDark: boolean }) {
         <div className="flex justify-between items-center">
           <span
             className={cn(
-              "text-base font-bold",
-              isDark ? "text-white/70" : "text-gray-600"
+              "text-lg font-bold leading-[26px] tracking-[-0.04px]",
+              isDark ? "text-[#bbb]" : "text-gray-600"
             )}
           >
             Border Radius
@@ -493,21 +518,38 @@ function SettingsTab({ isDark }: { isDark: boolean }) {
             {borderRadius}px
           </span>
         </div>
-        <input
-          type="range"
-          min="0"
-          max="32"
-          step="1"
-          value={borderRadius}
-          onChange={(e) => setBorderRadius(parseInt(e.target.value, 10))}
-          className={cn(
-            "w-full h-12 appearance-none rounded-lg cursor-pointer",
-            isDark ? "bg-white/10" : "bg-gray-200"
-          )}
-          style={{
-            WebkitAppearance: "none",
-          }}
-        />
+        <div className="relative group py-2">
+          <div 
+            className={cn(
+              "h-[10px] rounded-full w-full transition-all duration-200 ease-out group-hover:shadow-sm",
+              isDark 
+                ? "bg-[rgba(217,217,217,0.1)] border border-white/50 group-hover:border-white/70" 
+                : "bg-gray-200 border border-gray-300 group-hover:border-gray-400"
+            )}
+          />
+          <input
+            type="range"
+            min="0"
+            max="32"
+            step="1"
+            value={borderRadius}
+            onChange={(e) => setBorderRadius(parseInt(e.target.value, 10))}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            aria-label="Border radius slider"
+            aria-valuemin={0}
+            aria-valuemax={32}
+            aria-valuenow={Number(borderRadius)}
+          />
+          {/* Slider thumb indicator - bigger with darker border like desktop */}
+          <div 
+            className="absolute top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white shadow-lg border-2 pointer-events-none transition-all duration-200 ease-out"
+            style={{ 
+              left: `calc(${(borderRadius / 32) * 100}% - 12px)`,
+              background: 'linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%)',
+              borderColor: isDark ? '#555555' : '#374151'
+            }}
+          />
+        </div>
       </div>
     </div>
   )
@@ -561,7 +603,7 @@ function PalettesTab({ isDark }: { isDark: boolean }) {
   )
 }
 
-// Segmented Control Component
+// Segmented Control Component - using outline/border style like desktop
 function SegmentedControl({
   options,
   value,
@@ -574,36 +616,54 @@ function SegmentedControl({
   isDark: boolean
 }) {
   return (
-    <div
-      className={cn(
-        "flex rounded-lg p-1",
-        isDark ? "bg-white/10" : "bg-gray-200"
-      )}
-    >
-      {options.map((option) => (
-        <button
-          key={option.id}
-          onClick={() => onChange(option.id)}
-          className={cn(
-            "flex-1 py-3 px-4 rounded-md text-sm font-medium transition-all",
-            "min-h-[44px]", // Touch target
-            value === option.id
-              ? isDark
-                ? "bg-white/20 text-white"
-                : "bg-white text-gray-900 shadow-sm"
-              : isDark
-              ? "text-white/50"
-              : "text-gray-500"
-          )}
-        >
-          {option.label}
-        </button>
-      ))}
+    <div className="flex items-stretch w-full">
+      {options.map((option, index) => {
+        const isFirst = index === 0
+        const isLast = index === options.length - 1
+        const isSelected = value === option.id
+        
+        return (
+          <button
+            key={option.id}
+            onClick={() => onChange(option.id)}
+            className={cn(
+              "flex-1 h-12 flex items-center justify-center transition-all duration-200 ease-out cursor-pointer",
+              "min-h-[48px]", // Touch target
+              isFirst && "rounded-l-lg",
+              isLast && "rounded-r-lg",
+              !isLast && "border-r-0",
+              isSelected
+                ? isDark
+                  ? "bg-white/10 border border-white/50"
+                  : "bg-gray-200 border border-gray-300"
+                : isDark
+                ? "bg-transparent border border-white/50"
+                : "bg-transparent border border-gray-300"
+            )}
+            aria-pressed={isSelected}
+          >
+            <span
+              className={cn(
+                "text-base font-bold",
+                isSelected
+                  ? isDark
+                    ? "text-white"
+                    : "text-gray-900"
+                  : isDark
+                  ? "text-white/40"
+                  : "text-gray-400"
+              )}
+            >
+              {option.label}
+            </span>
+          </button>
+        )
+      })}
     </div>
   )
 }
 
-// Color Info Card for Mobile
+// Color Info Card for Mobile - using outline/border style like desktop
 function ColorInfoCardMobile({
   label,
   hex,
@@ -624,14 +684,14 @@ function ColorInfoCardMobile({
       await navigator.clipboard.writeText(text)
       addToast({
         title: "Copied!",
-        description: `${text} copied to clipboard`,
+        description: `${label} ${text} copied to clipboard`,
         variant: "success",
         duration: 2000,
       })
     } catch {
       addToast({
         title: "Copy failed",
-        description: "Unable to copy",
+        description: "Unable to copy to clipboard",
         variant: "error",
         duration: 3000,
       })
@@ -639,49 +699,56 @@ function ColorInfoCardMobile({
   }
 
   return (
-    <div
-      className={cn(
-        "flex gap-4 p-4 rounded-xl",
-        isDark ? "bg-white/5" : "bg-gray-50"
-      )}
-    >
+    <div className="flex gap-4 items-start">
+      {/* Color Swatch */}
       <div
-        className="w-16 h-16 rounded-lg shrink-0"
+        className="rounded-lg shrink-0 w-[76px] self-stretch min-h-[60px]"
         style={{ backgroundColor: color }}
+        aria-hidden="true"
       />
-      <div className="flex flex-col gap-1 flex-1">
-        <span
-          className={cn(
-            "text-xs uppercase tracking-wide",
-            isDark ? "text-white/50" : "text-gray-500"
-          )}
-        >
+      
+      {/* Color Info */}
+      <div className="flex flex-col gap-2 flex-1 min-w-0">
+        <p className={cn(
+          "text-[11px] uppercase tracking-wide leading-5",
+          isDark ? "text-[#c5c1bd]" : "text-gray-600"
+        )}>
           {label}
-        </span>
-        <button
-          onClick={() => copyToClipboard(hex)}
-          className={cn(
-            "text-left font-mono text-sm min-h-[44px] flex items-center",
-            isDark ? "text-white" : "text-gray-900"
-          )}
-        >
-          {hex}
-        </button>
-        <button
-          onClick={() => copyToClipboard(hsl)}
-          className={cn(
-            "text-left font-mono text-xs min-h-[44px] flex items-center",
-            isDark ? "text-white/70" : "text-gray-600"
-          )}
-        >
-          {hsl}
-        </button>
+        </p>
+        <div className="flex flex-col">
+          <div className="flex items-center justify-between text-[11px] leading-5 min-h-[36px]">
+            <span className={isDark ? "text-[#c5c1bd]" : "text-gray-600"}>HEX</span>
+            <button
+              onClick={() => copyToClipboard(hex)}
+              className={cn(
+                "hover:opacity-80 transition-colors font-mono cursor-pointer",
+                isDark ? "text-white" : "text-gray-900"
+              )}
+              aria-label={`Copy ${label} hex value: ${hex}`}
+            >
+              {hex}
+            </button>
+          </div>
+          <div className="flex items-center justify-between text-[11px] leading-5 min-h-[36px]">
+            <span className={isDark ? "text-[#c5c1bd]" : "text-gray-600"}>HSL</span>
+            <button
+              onClick={() => copyToClipboard(hsl)}
+              className={cn(
+                "hover:opacity-80 transition-colors font-mono cursor-pointer",
+                isDark ? "text-white" : "text-gray-900"
+              )}
+              aria-label={`Copy ${label} HSL value: ${hsl}`}
+            >
+              {hsl}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )
 }
 
-// Palette Section for Mobile
+// Palette Section for Mobile - using outline/border style like desktop
 function PaletteSectionMobile({
   title,
   colors,
@@ -702,14 +769,14 @@ function PaletteSectionMobile({
       await navigator.clipboard.writeText(text)
       addToast({
         title: "Copied!",
-        description: `${text} copied`,
+        description: `Color ${text} copied to clipboard`,
         variant: "success",
         duration: 2000,
       })
     } catch {
       addToast({
         title: "Copy failed",
-        description: "Unable to copy to clipboard",
+        description: "Unable to copy color to clipboard",
         variant: "error",
         duration: 3000,
       })
@@ -720,60 +787,74 @@ function PaletteSectionMobile({
     <div>
       <button
         onClick={onToggle}
+        aria-expanded={isExpanded}
+        aria-controls={`palette-section-mobile-${title.toLowerCase().replace(/\s+/g, "-")}`}
         className={cn(
-          "w-full flex items-center justify-between py-4 px-4 rounded-lg",
-          "min-h-[48px] transition-colors",
-          isDark ? "hover:bg-white/5" : "hover:bg-gray-100"
+          "w-full flex items-center justify-between pl-4 pr-2 py-1 rounded-lg",
+          "transition-all duration-200 ease-out cursor-pointer",
+          "focus:outline-none focus:ring-1",
+          isDark 
+            ? "hover:bg-white/5 focus:ring-white/30" 
+            : "hover:bg-gray-200 focus:ring-gray-400"
         )}
       >
-        <span
-          className={cn(
-            "text-base",
-            isDark ? "text-white/70" : "text-gray-700"
-          )}
-        >
+        <span className={cn(
+          "text-lg leading-[26px] tracking-[-0.04px]",
+          isDark ? "text-[#bbb]" : "text-gray-700"
+        )}>
           {title}
         </span>
-        <ChevronDown
-          className={cn(
-            "w-5 h-5 transition-transform",
-            isDark ? "text-white/50" : "text-gray-500",
-            isExpanded ? "" : "-rotate-90"
-          )}
-        />
+        <div className="h-12 w-8 flex items-center justify-center">
+          <ChevronDown
+            className={cn(
+              "w-5 h-5 transition-transform duration-300 ease-out",
+              isDark ? "text-[#bbb]" : "text-gray-700",
+              isExpanded ? "" : "-rotate-90"
+            )}
+            aria-hidden="true"
+          />
+        </div>
       </button>
       {isExpanded && (
-        <div className="grid grid-cols-3 gap-2 mt-2 px-2">
+        <div
+          id={`palette-section-mobile-${title.toLowerCase().replace(/\s+/g, "-")}`}
+          className="grid grid-cols-3 gap-3 mt-4"
+          role="region"
+          aria-label={`${title} color swatches`}
+        >
           {colors.map((color, index) => (
             <button
               key={index}
               onClick={() => copyToClipboard(color)}
+              aria-label={`Copy color ${color} to clipboard`}
               className={cn(
-                "flex flex-col gap-2 p-3 rounded-lg",
-                "min-h-[80px] transition-colors",
-                isDark ? "bg-white/5 active:bg-white/10" : "bg-gray-50 active:bg-gray-100"
+                "backdrop-blur-sm border rounded-xl p-3 flex flex-col gap-2",
+                "cursor-pointer transition-all duration-200 ease-out",
+                "hover:shadow-lg focus:outline-none focus:ring-1",
+                isDark 
+                  ? "bg-neutral-800/70 border-neutral-700/30 focus:ring-white/30" 
+                  : "bg-neutral-50 border-neutral-300/50 focus:ring-gray-400"
               )}
             >
               <div
-                className="w-full h-10 rounded-md"
+                className="w-full h-12 rounded-lg shadow-inner"
                 style={{ backgroundColor: color }}
+                aria-hidden="true"
               />
-              <span
-                className={cn(
-                  "text-xs font-mono",
-                  isDark ? "text-white/70" : "text-gray-700"
-                )}
-              >
-                {color}
-              </span>
-              <span
-                className={cn(
-                  "text-[10px]",
-                  isDark ? "text-white/40" : "text-gray-500"
-                )}
-              >
-                +{PERCENTAGES[index]}%
-              </span>
+              <div className="flex flex-col gap-1 text-xs">
+                <span className={cn(
+                  "font-mono font-semibold",
+                  isDark ? "text-white" : "text-gray-900"
+                )}>
+                  {color}
+                </span>
+                <span 
+                  className={isDark ? "text-slate-400" : "text-gray-600"} 
+                  style={{ fontSize: "10px" }}
+                >
+                  +{PERCENTAGES[index]}%
+                </span>
+              </div>
             </button>
           ))}
         </div>

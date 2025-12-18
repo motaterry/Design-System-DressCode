@@ -260,7 +260,7 @@ export function ColorSidebar() {
   return (
     <div 
       ref={sidebarRef}
-      className="p-8 max-h-screen overflow-y-auto scroll-smooth"
+      className="p-4 max-h-screen overflow-y-auto scroll-smooth"
       style={{ 
         backgroundColor: isDark ? 'rgba(0,0,0,0.92)' : 'rgba(249,250,251,0.98)',
         scrollBehavior: 'smooth',

@@ -39,40 +39,50 @@ export default function ControlCenterPage() {
 
           {/* Right Column - Demo Components (full width on mobile) */}
           <main 
-            className={`p-8 ${isMobile ? 'col-span-1 pt-20' : 'lg:col-span-8 xl:col-span-9'}`} 
+            className={`p-4 sm:p-6 lg:p-8 ${isMobile ? 'col-span-1 pt-20' : 'lg:col-span-8 xl:col-span-9'}`} 
             aria-label="Design system component previews"
           >
             {/* Mobile Inline Title - scrolls with content */}
             {isMobile && <MobileInlineTitle isDark={isDark} />}
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+            {/* 
+              Fully responsive grid optimized for horizontal space fill:
+              - 1 col on mobile (<640px)
+              - 2 cols on tablet (640px-1023px) 
+              - 2 cols on lg when sidebar present (1024px-1279px)
+              - 3 cols on xl+ (1280px+)
+              Chart cards span full width on intermediate breakpoints to avoid dead space
+            */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
               {/* Two smaller cards stacked to match height of larger cards */}
-              <div className="flex flex-col gap-6 min-h-full">
-                <div className="flex-1">
-              <UserProfileCard />
-            </div>
-                <div className="flex-1">
-                <CalendarWidget />
+              <div className="flex flex-col gap-4 sm:gap-5 lg:gap-6 min-h-full">
+                <div className="flex-1 min-h-0">
+                  <UserProfileCard />
+                </div>
+                <div className="flex-1 min-h-0">
+                  <CalendarWidget />
+                </div>
               </div>
-            </div>
 
-              {/* Larger cards - all have consistent height */}
-              <div className="h-full">
+              {/* Larger cards - responsive heights and widths */}
+              <div className="h-full min-h-[320px] sm:min-h-[360px] lg:min-h-[380px]">
                 <NotificationsPanel />
               </div>
-              <div className="h-full">
+              <div className="h-full min-h-[320px] sm:min-h-[360px] lg:min-h-[380px]">
                 <RadixThemesComponent />
               </div>
-              <div className="h-full">
-              <BarChartDemo />
+              
+              {/* Chart cards - can span full width on 2-col layouts for better data viz */}
+              <div className="h-full min-h-[300px] sm:min-h-[340px] lg:min-h-[360px] sm:col-span-2 xl:col-span-1">
+                <BarChartDemo />
               </div>
-              <div className="h-full">
-              <AreaChartDemo />
+              <div className="h-full min-h-[300px] sm:min-h-[340px] lg:min-h-[360px] sm:col-span-2 xl:col-span-1">
+                <AreaChartDemo />
               </div>
-              <div className="h-full">
-              <DoughnutChartDemo />
+              <div className="h-full min-h-[280px] sm:min-h-[320px] lg:min-h-[340px] sm:col-span-2 xl:col-span-1">
+                <DoughnutChartDemo />
+              </div>
             </div>
-          </div>
           </main>
         </div>
       </div>

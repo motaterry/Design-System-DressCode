@@ -10,14 +10,27 @@ export const metadata: Metadata = {
   description: "Dynamic color customization control center",
 }
 
+// Inline script to initialize theme before React hydrates - prevents flash of incorrect theme
+const themeInitScript = `
+(function() {
+  try {
+    var theme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+  } catch (e) {}
+})();
+`
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="antialiased" suppressHydrationWarning>
+    <html lang="en">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
+      <body className="antialiased">
         <ThemeProvider>
           <ColorProvider>
             <DesignSystemProvider>

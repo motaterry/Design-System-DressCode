@@ -12,6 +12,7 @@ import {
 } from "recharts"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
+import { useIsMobile } from "@/lib/use-media-query"
 
 const data = [
   { name: "Mon", value1: 40, value2: 20 },
@@ -26,25 +27,35 @@ const data = [
 export function AreaChartDemo() {
   const { mode } = useTheme()
   const isDark = mode === "dark"
+  const isMobile = useIsMobile()
   const [activeFilter, setActiveFilter] = useState("7D")
+  
+  // Responsive chart margins - tighter on mobile to maximize chart area
+  const chartMargins = isMobile 
+    ? { top: 8, right: 8, left: -10, bottom: 0 }
+    : { top: 10, right: 10, left: 0, bottom: 0 }
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className={`text-lg ${
+    <Card className="h-full flex flex-col w-full">
+      {/* 
+        Nielsen #4: Consistency - Matching header style across all chart cards
+        Nielsen #8: Aesthetic design - Clean spacing hierarchy
+      */}
+      <CardHeader className="pb-2 pt-5 flex-shrink-0">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <CardTitle className={`text-base sm:text-lg font-semibold ${
             isDark ? "text-white" : "text-gray-900"
           }`}>
             Revenue Trend
           </CardTitle>
-          <div className="flex gap-1">
+          <div className="flex gap-1.5">
             {["1D", "7D", "30D"].map((filter) => (
               <Button
                 key={filter}
                 variant={activeFilter === filter ? "default" : "outline"}
                 size="sm"
                 onClick={() => setActiveFilter(filter)}
-                className="h-7 px-2 text-xs"
+                className="h-7 px-2.5 text-xs font-medium"
               >
                 {filter}
               </Button>
@@ -52,9 +63,11 @@ export function AreaChartDemo() {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col">
-        <ResponsiveContainer width="100%" height="100%" className="min-h-[200px]">
-          <AreaChart data={data}>
+      <CardContent className="flex-1 flex flex-col min-h-0 pt-0 pb-4 px-4 sm:px-5">
+        {/* Chart container fills all available horizontal and vertical space */}
+        <div className="w-full flex-1 min-h-[180px] sm:min-h-[200px] lg:min-h-[220px]">
+          <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data} margin={chartMargins}>
             <defs>
               <linearGradient id="colorPrimary" x1="0" y1="0" x2="0" y2="1">
                 <stop
@@ -85,20 +98,21 @@ export function AreaChartDemo() {
               dataKey="name"
               tick={{ 
                 fill: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", 
-                fontSize: 12 
+                fontSize: isMobile ? 10 : 12 
               }}
               axisLine={{ 
                 stroke: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" 
               }}
+              tickLine={false}
             />
             <YAxis
               tick={{ 
                 fill: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", 
-                fontSize: 12 
+                fontSize: isMobile ? 9 : 12 
               }}
-              axisLine={{ 
-                stroke: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" 
-              }}
+              axisLine={false}
+              tickLine={false}
+              width={isMobile ? 28 : 40}
             />
             <Tooltip
               content={({ active, payload, label }) => {
@@ -160,6 +174,7 @@ export function AreaChartDemo() {
             />
           </AreaChart>
         </ResponsiveContainer>
+        </div>
       </CardContent>
     </Card>
   )

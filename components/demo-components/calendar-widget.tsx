@@ -98,12 +98,12 @@ export function CalendarWidget() {
           </button>
         </div>
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col">
-        <div className="grid grid-cols-7 gap-1 mb-2" role="row">
+      <CardContent className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-1 sm:mb-2 flex-shrink-0" role="row">
           {DAYS.map((day) => (
             <div
               key={day}
-              className={`text-center text-xs font-medium py-2 ${
+              className={`text-center text-[10px] sm:text-xs font-medium py-0.5 sm:py-1 ${
                 isDark ? "text-white/60" : "text-gray-600"
               }`}
               role="columnheader"
@@ -113,11 +113,11 @@ export function CalendarWidget() {
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-1" role="grid" aria-labelledby="calendar-month-year">
+        <div className="grid grid-cols-7 gap-0.5 sm:gap-1 flex-1 min-h-0 auto-rows-fr" role="grid" aria-labelledby="calendar-month-year">
           {days.map((day, index) => (
             <button
               key={index}
-              className={`aspect-square flex items-center justify-center text-sm rounded transition-all duration-200 ease-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] ${
+              className={`flex items-center justify-center text-xs sm:text-sm rounded transition-all duration-200 ease-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] min-h-[28px] sm:min-h-[32px] ${
                 day === selectedDay
                   ? "bg-[var(--color-primary)] font-semibold"
                   : day
