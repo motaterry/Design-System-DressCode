@@ -2,20 +2,20 @@
 
 :root {
   /* Dynamic Color Variables - HSL format */
-  --primary-h: 27;
+  --primary-h: 114;
   --primary-s: 100%;
-  --primary-l: 50%;
+  --primary-l: 58%;
   --color-primary: hsl(var(--primary-h), var(--primary-s), var(--primary-l));
 
-  --comp-h: 207;
+  --comp-h: 294;
   --comp-s: 100%;
-  --comp-l: 50%;
+  --comp-l: 58%;
   --color-complementary: hsl(var(--comp-h), var(--comp-s), var(--comp-l));
 
   /* Design System Controls */
   --button-text-color: light;
   --border-radius: 8px;
-  --logo-sticky-offset: -2rem; /* Specific offset for sticky logo positioning */
+  --logo-sticky-offset: -1.5rem; /* Specific offset for sticky logo positioning */
   --section-gap: calc(var(--spacing) * 16); /* Consistent spacing between sidebar sections */
 
   /* Background colors - Dark Mode Default */
@@ -239,6 +239,17 @@ a,
   transition: fill 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Remove focus outline from recharts interactive elements */
+.recharts-sector,
+.recharts-sector:focus,
+.recharts-sector:focus-visible,
+.recharts-surface,
+.recharts-surface:focus,
+.recharts-surface:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
+}
+
 /* Color input - remove all outlines, borders, and shadows */
 input[type="color"] {
   outline: none !important;
@@ -316,4 +327,16 @@ input[type="color"]::-moz-color-swatch {
 * {
   scrollbar-width: thin;
   scrollbar-color: hsl(var(--foreground) / 0.15) transparent;
+}
+
+/* Hide Next.js dev tools portal elements */
+nextjs-portal {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  position: absolute !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
 }
