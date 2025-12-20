@@ -401,13 +401,32 @@ script[type="application/json"][data-nextjs-portal] {
 
 /* Each set of cards in the scroll - must have identical heights for seamless loop */
 .scrolling-card-set {
-  /* Gap at seam matches the grid gap (lg:gap-6 = 1.5rem) */
-  padding-bottom: 1.5rem;
+  /* No padding - gap handled by flexbox on content wrapper */
 }
 
 /* Inner wrapper contains the actual card grid */
 .scrolling-card-inner {
   /* Ensures content is contained cleanly */
+}
+
+/* Scrolling content uses flexbox with gap matching the card grid */
+.scrolling-card-content {
+  display: flex;
+  flex-direction: column;
+  /* Responsive gap matching the card grid: gap-4 sm:gap-5 lg:gap-6 */
+  gap: 1rem; /* base: gap-4 */
+}
+
+@media (min-width: 640px) {
+  .scrolling-card-content {
+    gap: 1.25rem; /* sm:gap-5 */
+  }
+}
+
+@media (min-width: 1024px) {
+  .scrolling-card-content {
+    gap: 1.5rem; /* lg:gap-6 */
+  }
 }
 
 /* Disable scroll animation when reduced motion is preferred */
