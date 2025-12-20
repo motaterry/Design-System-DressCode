@@ -347,3 +347,66 @@ script[type="application/json"][data-nextjs-portal] {
   margin: 0 !important;
   padding: 0 !important;
 }
+
+/* ===== Scrolling Card Grid - Store Display Animation ===== */
+
+/* Container that creates the viewing window */
+.scrolling-card-container {
+  /* Smoother gradient fade using eased stops for natural vignette effect */
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.1) 2%,
+    rgba(0, 0, 0, 0.4) 5%,
+    rgba(0, 0, 0, 0.8) 8%,
+    black 12%,
+    black 88%,
+    rgba(0, 0, 0, 0.8) 92%,
+    rgba(0, 0, 0, 0.4) 95%,
+    rgba(0, 0, 0, 0.1) 98%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.1) 2%,
+    rgba(0, 0, 0, 0.4) 5%,
+    rgba(0, 0, 0, 0.8) 8%,
+    black 12%,
+    black 88%,
+    rgba(0, 0, 0, 0.8) 92%,
+    rgba(0, 0, 0, 0.4) 95%,
+    rgba(0, 0, 0, 0.1) 98%,
+    transparent 100%
+  );
+}
+
+/* The scrolling content wrapper */
+.scrolling-card-content {
+  animation-name: scrollVertical;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+/* Vertical scroll keyframe - scrolls through 50% (first set of cards) */
+@keyframes scrollVertical {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+/* Each set of cards in the scroll */
+.scrolling-card-set {
+  padding-bottom: 1.5rem; /* Gap between duplicated sets */
+}
+
+/* Disable scroll animation when reduced motion is preferred */
+@media (prefers-reduced-motion: reduce) {
+  .scrolling-card-content {
+    animation: none !important;
+  }
+}
