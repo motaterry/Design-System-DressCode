@@ -192,7 +192,7 @@ export function ColorWheel() {
 
   return (
     <div className="flex justify-center w-full px-2">
-      <div className="relative w-full max-w-[256px] aspect-square" ref={wheelRef}>
+      <div className="relative w-full max-w-[320px] aspect-square" ref={wheelRef}>
           <div
             ref={containerRef}
             role="slider"
@@ -234,7 +234,7 @@ export function ColorWheel() {
               aria-hidden="true"
             >
               <div
-                className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-3 border-white"
+                className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full border-[3px] border-white shadow-lg"
                 style={{
                   backgroundColor: primaryHex,
                 }}
@@ -253,7 +253,7 @@ export function ColorWheel() {
               aria-hidden="true"
             >
               <div
-                className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-white/80"
+                className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-2 border-white/80 shadow-md"
                 style={{
                   backgroundColor: compHex,
                 }}

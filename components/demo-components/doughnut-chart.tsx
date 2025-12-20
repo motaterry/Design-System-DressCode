@@ -118,10 +118,30 @@ export function DoughnutChartDemo() {
   const isDark = mode === "dark"
   const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const [primaryColor, setPrimaryColor] = useState<string>("#6BCF7F") // Default fallback
   const chartRef = useRef<HTMLDivElement>(null)
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const rawGradientId = useId()
   const gradientId = rawGradientId.replace(/:/g, '') // Sanitize for SVG ID
+  
+  // Get computed primary color value (SVG doesn't always resolve CSS variables on mobile)
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    
+    const root = document.documentElement
+    const computedColor = getComputedStyle(root).getPropertyValue("--color-primary").trim()
+    
+    // If we got a valid color, use it; otherwise compute from HSL variables
+    if (computedColor && computedColor !== "") {
+      setPrimaryColor(computedColor)
+    } else {
+      // Fallback: compute from HSL variables
+      const h = getComputedStyle(root).getPropertyValue("--primary-h").trim() || "114"
+      const s = getComputedStyle(root).getPropertyValue("--primary-s").trim() || "100%"
+      const l = getComputedStyle(root).getPropertyValue("--primary-l").trim() || "58%"
+      setPrimaryColor(`hsl(${h}, ${s}, ${l})`)
+    }
+  }, [mode]) // Re-compute when theme changes
   
   // Get responsive dimensions
   const { size: chartSize, innerRadius, outerRadius } = useChartDimensions(chartContainerRef)
@@ -134,7 +154,7 @@ export function DoughnutChartDemo() {
   
   // Foreground arc data (only the filled portion)
   const foregroundData = [
-    { name: "Confirmed", value: 272, color: "var(--color-primary)" },
+    { name: "Confirmed", value: 272, color: primaryColor },
   ]
   
   const onPieLeave = () => setActiveIndex(undefined)
@@ -205,7 +225,7 @@ export function DoughnutChartDemo() {
                     const anchorY = Math.sin(angle) >= 0 ? "0%" : "-100%"
                     
                     const isConfirmed = data.name === "Confirmed"
-                    const dotColor = isConfirmed ? "var(--color-primary)" : (isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)")
+                    const dotColor = isConfirmed ? primaryColor : (isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)")
                     const label = isConfirmed ? "confirmed" : "pending"
                     const value = isConfirmed ? 272 : 48
                     
@@ -285,7 +305,7 @@ export function DoughnutChartDemo() {
                   onMouseLeave={onPieLeave}
                 >
                   <Cell 
-                    fill="var(--color-primary)"
+                    fill={primaryColor}
                     stroke="none"
                     style={{ 
                       cursor: "pointer",
@@ -390,7 +410,7 @@ export function DoughnutChartDemo() {
             <div className="flex items-center gap-1.5">
               <div
                 className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                style={{ backgroundColor: "var(--color-primary)" }}
+                style={{ backgroundColor: primaryColor }}
               />
               <span className={`text-sm font-semibold tabular-nums ${
                 isDark ? "text-white" : "text-gray-800"

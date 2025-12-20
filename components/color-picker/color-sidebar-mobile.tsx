@@ -326,9 +326,9 @@ function ColorsTab({ isDark }: { isDark: boolean }) {
 
   return (
     <div className="flex flex-col gap-6 pt-4">
-      {/* Color Wheel - scaled for mobile */}
-      <div className="flex justify-center">
-        <div className="transform scale-90 origin-center">
+      {/* Color Wheel - larger for mobile touch interaction */}
+      <div className="flex justify-center w-full px-2">
+        <div className="w-full max-w-[320px]">
           <ColorWheel />
         </div>
       </div>
