@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect, useId } from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { useTheme } from "@/components/theme-context"
+import { useColorTheme } from "@/components/color-picker/color-context"
+import { hslToHex } from "@/lib/color-utils"
 import { PieChart, Pie, Cell, ResponsiveContainer, Sector, Tooltip } from "recharts"
 
 const total = 321
@@ -115,33 +117,18 @@ function useChartDimensions(containerRef: React.RefObject<HTMLDivElement | null>
 
 export function DoughnutChartDemo() {
   const { mode } = useTheme()
+  const { theme } = useColorTheme()
   const isDark = mode === "dark"
   const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
-  const [primaryColor, setPrimaryColor] = useState<string>("#6BCF7F") // Default fallback
   const chartRef = useRef<HTMLDivElement>(null)
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const rawGradientId = useId()
   const gradientId = rawGradientId.replace(/:/g, '') // Sanitize for SVG ID
   
-  // Get computed primary color value (SVG doesn't always resolve CSS variables on mobile)
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    
-    const root = document.documentElement
-    const computedColor = getComputedStyle(root).getPropertyValue("--color-primary").trim()
-    
-    // If we got a valid color, use it; otherwise compute from HSL variables
-    if (computedColor && computedColor !== "") {
-      setPrimaryColor(computedColor)
-    } else {
-      // Fallback: compute from HSL variables
-      const h = getComputedStyle(root).getPropertyValue("--primary-h").trim() || "114"
-      const s = getComputedStyle(root).getPropertyValue("--primary-s").trim() || "100%"
-      const l = getComputedStyle(root).getPropertyValue("--primary-l").trim() || "58%"
-      setPrimaryColor(`hsl(${h}, ${s}, ${l})`)
-    }
-  }, [mode]) // Re-compute when theme changes
+  // Get primary color directly from color context (more reliable than CSS variables for SVG)
+  // Ensure we always have a valid hex color
+  const primaryColor = hslToHex(theme.primary.h, theme.primary.s, theme.primary.l) || "#6BCF7F"
   
   // Get responsive dimensions
   const { size: chartSize, innerRadius, outerRadius } = useChartDimensions(chartContainerRef)
@@ -153,8 +140,9 @@ export function DoughnutChartDemo() {
   const backgroundData = [{ name: "Background", value: 100, color: unconfirmedColor }]
   
   // Foreground arc data (only the filled portion)
+  // Use hex color directly - SVG needs actual color values, not CSS variables
   const foregroundData = [
-    { name: "Confirmed", value: 272, color: primaryColor },
+    { name: "Confirmed", value: 272, color: primaryColor, fill: primaryColor },
   ]
   
   const onPieLeave = () => setActiveIndex(undefined)
@@ -288,6 +276,7 @@ export function DoughnutChartDemo() {
                 </Pie>
                 {/* Foreground arc - base color layer with drop shadow */}
                 <Pie
+                  key={`foreground-${primaryColor}`}
                   data={foregroundData}
                   cx="50%"
                   cy="50%"
@@ -309,7 +298,8 @@ export function DoughnutChartDemo() {
                     stroke="none"
                     style={{ 
                       cursor: "pointer",
-                      transition: "all 0.2s ease-out"
+                      transition: "all 0.2s ease-out",
+                      fill: primaryColor
                     }}
                   />
                 </Pie>
