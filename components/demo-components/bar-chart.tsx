@@ -6,6 +6,9 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recha
 import { Button } from "@/components/ui/button"
 import { useState, useEffect, useRef, useId } from "react"
 import { useIsMobile } from "@/lib/use-media-query"
+import { useDesignSystem } from "@/components/design-system-context"
+import { useColorTheme } from "@/components/color-picker/color-context"
+import { get3DEffects } from "@/lib/3d-effects"
 
 const data = [
   { name: "Mon", value1: 40, value2: 30 },
@@ -25,7 +28,7 @@ const data = [
 
 // No global gradient definitions needed - we create per-bar gradients for proper positioning
 
-// Custom bar shape that renders with layered gradients
+// Custom bar shape that renders with 3D effects or flat colors
 interface GradientBarProps {
   x?: number
   y?: number
@@ -37,6 +40,9 @@ interface GradientBarProps {
 }
 
 const GradientBar = ({ x = 0, y = 0, width = 0, height = 0, chartId, isPrimary, isDark }: GradientBarProps) => {
+  const { enable3D } = useDesignSystem()
+  const { theme } = useColorTheme()
+  
   if (height <= 0 || width <= 0) return null
   
   // Create sharp-cornered rectangle path
@@ -48,77 +54,132 @@ const GradientBar = ({ x = 0, y = 0, width = 0, height = 0, chartId, isPrimary, 
     Z
   `.trim()
   
-  // Unique IDs for this specific bar
-  const uniqueId = `${chartId}-${isPrimary ? 'p' : 'c'}-${Math.round(x)}-${Math.round(y)}`
-  const gradientId = `${uniqueId}-grad`
+  // Get color values for primary or complementary
+  const colorHSL = isPrimary ? theme.primary : theme.complementary
   
-  // === DARK MODE ===
-  // Orange: radial-gradient(at 7.05% -0.93%, rgba(255,255,255,0.50) 0%, rgba(0,0,0,0.20) 100%), #FF6C05
-  // Blue: radial-gradient(at 7.05% -0.93%, rgba(255,255,255,0.60) 0%, rgba(0,0,0,0.40) 100%), #1472FF
-  //
-  // === LIGHT MODE ===
-  // Primary: radial-gradient(95.65% 121.32% at 7.05% -0.93%, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.00) 100%), #FF6C05
-  // Secondary: radial-gradient(114.55% 148.93% at 7.05% -0.93%, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.00) 100%), #1472FF
-  
-  // Gradient configuration based on theme
-  let startColor: string
-  let endColor: string
-  let startOpacity: number
-  let endOpacity: number
-  
-  if (isDark) {
-    // Dark mode: white highlight → black shadow
-    startColor = "white"
-    endColor = "black"
-    startOpacity = isPrimary ? 0.50 : 0.60
-    endOpacity = isPrimary ? 0.20 : 0.40
-  } else {
-    // Light mode: white highlight → transparent white (no black shadow)
-    startColor = "white"
-    endColor = "white"
-    startOpacity = 0.50
-    endOpacity = 0.00
-  }
-  
-  // Base fill color
+  // Base fill color (fallback when 3D is off)
   const baseFill = isPrimary ? "var(--color-primary)" : "var(--color-complementary)"
   
-  return (
-    <g className="gradient-bar">
-      <defs>
-        {/* 
-          Radial gradient matching CSS:
-          radial-gradient(114.55% 148.93% at 7.05% -0.93%, rgba(255,255,255,0.50) 0%, rgba(0,0,0,0.20) 100%)
+  // When 3D is enabled, use 3D effects
+  if (enable3D) {
+    const effects = get3DEffects(colorHSL.h, colorHSL.s, colorHSL.l, { intensity: 1.0 })
+    
+    // Unique ID for linear gradient and filters
+    const uniqueId = `${chartId}-${isPrimary ? 'p' : 'c'}-${Math.round(x)}-${Math.round(y)}`
+    const linearGradientId = `${uniqueId}-linear`
+    const shadowFilterId = `${uniqueId}-shadow`
+    const glowFilterId = `${uniqueId}-glow`
+    const combinedFilterId = `${uniqueId}-combined`
+    
+    // Calculate gradient colors directly from HSL values
+    // Top is lighter (+10%), bottom is darker (-10%)
+    const intensity = 1.0
+    const gradientTopL = Math.min(100, colorHSL.l + 10 * intensity)
+    const gradientBottomL = Math.max(0, colorHSL.l - 10 * intensity)
+    
+    // Build HSL color strings for SVG
+    const topColor = `hsl(${colorHSL.h}, ${colorHSL.s}%, ${gradientTopL}%)`
+    const bottomColor = `hsl(${colorHSL.h}, ${colorHSL.s}%, ${gradientBottomL}%)`
+    
+    // Shadow and glow opacities matching button effects
+    const shadowOpacity = 0.3 * intensity
+    const shadowSecondaryOpacity = 0.2 * intensity
+    const glowOpacity = 0.2 * intensity
+    
+    // Convert HSL to RGB for filter (approximation)
+    // For filters, we'll use the base color
+    const baseColorRgb = `hsl(${colorHSL.h}, ${colorHSL.s}%, ${colorHSL.l}%)`
+    
+    return (
+      <g className="gradient-bar">
+        <defs>
+          <linearGradient
+            id={linearGradientId}
+            x1="0%"
+            y1="0%"
+            x2="0%"
+            y2="100%"
+          >
+            <stop offset="0%" stopColor={topColor} />
+            <stop offset="100%" stopColor={bottomColor} />
+          </linearGradient>
           
-          - Center: 7.05% from left, -0.93% from top (slightly above element)
-          - Size: ~130% radius to approximate the elliptical 114.55% x 148.93%
-        */}
-        <radialGradient
-          id={gradientId}
-          cx="0.0705"
-          cy="-0.0093"
-          r="1.3"
-          fx="0.0705"
-          fy="-0.0093"
-        >
-          <stop offset="0%" stopColor={startColor} stopOpacity={startOpacity} />
-          <stop offset="100%" stopColor={endColor} stopOpacity={endOpacity} />
-        </radialGradient>
-      </defs>
-      
-      {/* Base color layer */}
-      <path
-        d={path}
-        fill={baseFill}
-        className="recharts-rectangle"
-      />
-      
-      {/* Radial gradient overlay - creates depth */}
-      <path
-        d={path}
-        fill={`url(#${gradientId})`}
-      />
-    </g>
+          {/* Shadow filter - multi-layer like buttons */}
+          <filter id={shadowFilterId} x="-100%" y="-100%" width="300%" height="300%">
+            {/* Primary shadow - larger blur, offset down */}
+            <feGaussianBlur in="SourceAlpha" stdDeviation="6" />
+            <feOffset dx="0" dy="4" result="offsetblur1" />
+            <feFlood floodColor={baseColorRgb} floodOpacity={shadowOpacity} />
+            <feComposite in2="offsetblur1" operator="in" />
+            
+            {/* Secondary shadow - smaller blur, closer offset */}
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
+            <feOffset dx="0" dy="2" result="offsetblur2" />
+            <feFlood floodColor={baseColorRgb} floodOpacity={shadowSecondaryOpacity} />
+            <feComposite in2="offsetblur2" operator="in" result="shadow2" />
+            
+            <feMerge>
+              <feMergeNode />
+              <feMergeNode in="shadow2" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          
+          {/* Glow filter */}
+          <filter id={glowFilterId} x="-200%" y="-200%" width="500%" height="500%">
+            <feGaussianBlur stdDeviation="10" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          
+          {/* Combined filter with shadow and glow */}
+          <filter id={combinedFilterId} x="-200%" y="-200%" width="500%" height="500%">
+            {/* Primary shadow layer */}
+            <feGaussianBlur in="SourceAlpha" stdDeviation="6" />
+            <feOffset dx="0" dy="4" result="offsetblur1" />
+            <feFlood floodColor={baseColorRgb} floodOpacity={shadowOpacity} />
+            <feComposite in2="offsetblur1" operator="in" result="shadow1" />
+            
+            {/* Secondary shadow layer */}
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
+            <feOffset dx="0" dy="2" result="offsetblur2" />
+            <feFlood floodColor={baseColorRgb} floodOpacity={shadowSecondaryOpacity} />
+            <feComposite in2="offsetblur2" operator="in" result="shadow2" />
+            
+            {/* Glow layer */}
+            <feGaussianBlur stdDeviation="10" result="glow" />
+            <feFlood floodColor={baseColorRgb} floodOpacity={glowOpacity} />
+            <feComposite in2="glow" operator="in" result="coloredGlow" />
+            
+            <feMerge>
+              <feMergeNode in="shadow1" />
+              <feMergeNode in="shadow2" />
+              <feMergeNode in="coloredGlow" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        
+        {/* 3D gradient bar with combined shadow and glow filter */}
+        <path
+          d={path}
+          fill={`url(#${linearGradientId})`}
+          className="recharts-rectangle"
+          filter={`url(#${combinedFilterId})`}
+        />
+      </g>
+    )
+  }
+  
+  // When 3D is disabled, use flat color
+  return (
+    <path
+      d={path}
+      fill={baseFill}
+      className="recharts-rectangle"
+    />
   )
 }
 

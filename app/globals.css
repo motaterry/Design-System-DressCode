@@ -15,6 +15,7 @@
   /* Design System Controls */
   --button-text-color: light;
   --border-radius: 8px;
+  --enable-3d: 1; /* 3D effects enabled by default */
   --logo-sticky-offset: -1.5rem; /* Specific offset for sticky logo positioning */
   --section-gap: calc(var(--spacing) * 16); /* Consistent spacing between sidebar sections */
 

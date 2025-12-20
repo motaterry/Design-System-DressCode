@@ -7,11 +7,12 @@ import { useColorTheme } from "./color-context"
 import { useTheme } from "@/components/theme-context"
 import { useDesignSystem } from "@/components/design-system-context"
 import { hslToHex, formatHsl, getContrastRatio, getAccessibleTextColor, normalizeHex } from "@/lib/color-utils"
-import { ChevronDown, Moon, Type, SquareIcon, Download } from "lucide-react"
+import { ChevronDown, Moon, Type, SquareIcon, Download, Box } from "lucide-react"
 import { useToast } from "@/components/ui/toast"
 import { cn } from "@/lib/utils"
 import { DresscodeLogo } from "@/components/logo/dresscode-logo"
 import { ExportModal } from "./export-modal"
+import { Switch } from "@/components/ui/switch"
 
 const PERCENTAGES = [5, 20, 30, 40, 50, 60, 70, 80, 90]
 
@@ -54,10 +55,20 @@ function BorderRadiusIcon({ isDark }: { isDark: boolean }) {
   )
 }
 
+// 3D Effects icon component
+function ThreeDIcon({ isDark }: { isDark: boolean }) {
+  return (
+    <Box 
+      size={16} 
+      className={isDark ? "text-white" : "text-gray-900"}
+    />
+  )
+}
+
 export function ColorSidebar() {
   const { theme, updatePrimaryFromHex, updateComplementaryFromHex } = useColorTheme()
   const { mode, setMode } = useTheme()
-  const { buttonTextColor, setButtonTextColor, borderRadius, setBorderRadius } = useDesignSystem()
+  const { buttonTextColor, setButtonTextColor, borderRadius, setBorderRadius, enable3D, setEnable3D } = useDesignSystem()
   const { addToast } = useToast()
   const [expanded, setExpanded] = useState({
     tints: false,
@@ -728,6 +739,31 @@ export function ColorSidebar() {
               }}
             />
           </div>
+          </div>
+
+          {/* 3D Effects Toggle Section */}
+          <div className="flex flex-col gap-3">
+            <div className="flex gap-2.5 items-center">
+              <ThreeDIcon isDark={isDark} />
+              <span className={`text-lg font-bold leading-[26px] tracking-[-0.04px] ${
+                isDark ? 'text-[#bbb]' : 'text-gray-600'
+              }`}>
+                3D Effects
+              </span>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <span className={`text-sm ${
+                isDark ? 'text-white/70' : 'text-gray-600'
+              }`}>
+                {enable3D ? 'Enabled' : 'Disabled'}
+              </span>
+              <Switch
+                checked={enable3D}
+                onCheckedChange={setEnable3D}
+                aria-label="Toggle 3D effects"
+              />
+            </div>
           </div>
 
           {/* Palette Sections - Separated by larger gap for visual hierarchy */}

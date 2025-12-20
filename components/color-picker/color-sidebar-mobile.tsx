@@ -12,13 +12,14 @@ import {
   getAccessibleTextColor,
   normalizeHex,
 } from "@/lib/color-utils"
-import { ChevronDown, Palette, Settings, Layers, Download } from "lucide-react"
+import { ChevronDown, Palette, Settings, Layers, Download, Box } from "lucide-react"
 import { useToast } from "@/components/ui/toast"
 import { cn } from "@/lib/utils"
 import { BottomSheet } from "@/components/ui/bottom-sheet"
 import { DresscodeLogo } from "@/components/logo/dresscode-logo"
 import { Pencil } from "lucide-react"
 import { ExportModal } from "./export-modal"
+import { Switch } from "@/components/ui/switch"
 
 type TabId = "colors" | "settings" | "palettes"
 
@@ -442,7 +443,7 @@ function ColorsTab({ isDark }: { isDark: boolean }) {
 // Settings Tab - using styles consistent with desktop
 function SettingsTab({ isDark }: { isDark: boolean }) {
   const { mode, setMode } = useTheme()
-  const { buttonTextColor, setButtonTextColor, borderRadius, setBorderRadius } =
+  const { buttonTextColor, setButtonTextColor, borderRadius, setBorderRadius, enable3D, setEnable3D } =
     useDesignSystem()
   const { theme } = useColorTheme()
   const primaryHex = hslToHex(theme.primary.h, theme.primary.s, theme.primary.l)
@@ -581,6 +582,38 @@ function SettingsTab({ isDark }: { isDark: boolean }) {
               background: 'linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%)',
               borderColor: isDark ? '#555555' : '#374151'
             }}
+          />
+        </div>
+      </div>
+
+      {/* 3D Effects Toggle */}
+      <div className="flex flex-col gap-3">
+        <div className="flex gap-2.5 items-center">
+          <Box 
+            size={16} 
+            className={isDark ? "text-white" : "text-gray-900"}
+          />
+          <span
+            className={cn(
+              "text-lg font-bold leading-[26px] tracking-[-0.04px]",
+              isDark ? "text-[#bbb]" : "text-gray-600"
+            )}
+          >
+            3D Effects
+          </span>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <span className={cn(
+            "text-sm",
+            isDark ? "text-white/70" : "text-gray-600"
+          )}>
+            {enable3D ? "Enabled" : "Disabled"}
+          </span>
+          <Switch
+            checked={enable3D}
+            onCheckedChange={setEnable3D}
+            aria-label="Toggle 3D effects"
           />
         </div>
       </div>

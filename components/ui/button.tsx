@@ -8,6 +8,7 @@ import { hslToHex, getAccessibleTextColor } from "@/lib/color-utils"
 import { useTheme } from "@/components/theme-context"
 import { useDesignSystem } from "@/components/design-system-context"
 import { useColorTheme } from "@/components/color-picker/color-context"
+import { use3DEffects } from "@/lib/use-3d-effects"
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed relative [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&>*]:relative [&>*]:z-10",
@@ -43,10 +44,16 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const { mode } = useTheme()
-    const { buttonTextColor } = useDesignSystem()
+    const { buttonTextColor, enable3D } = useDesignSystem()
     const { theme } = useColorTheme()
     const isDark = mode === "dark"
     const Comp = asChild ? Slot : "button"
+    
+    // Get 3D effects for primary buttons
+    const { effects, boxShadow, boxShadowHover, isEnabled: is3DEnabled } = use3DEffects(
+      theme.primary,
+      { intensity: 1.0 }
+    )
     
     // Get primary color hex for contrast calculation
     const primaryHex = hslToHex(theme.primary.h, theme.primary.s, theme.primary.l)
@@ -112,21 +119,49 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       ? { "--color-primary-hover": hoverColor } as React.CSSProperties
       : undefined
     
+    // Apply 3D effects for primary buttons when enabled
+    const isPrimaryButton = variant === "default" || variant === undefined
+    const shouldApply3D = isPrimaryButton && is3DEnabled && enable3D
+    
+    const threeDStyle = shouldApply3D && effects ? {
+      background: effects.gradient,
+      boxShadow: boxShadow,
+    } : {}
+    
+    // Handle hover state for 3D effects - merge with existing handlers
+    const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (shouldApply3D && boxShadowHover) {
+        e.currentTarget.style.boxShadow = boxShadowHover
+      }
+      props.onMouseEnter?.(e)
+    }
+    
+    const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (shouldApply3D && boxShadow) {
+        e.currentTarget.style.boxShadow = boxShadow
+      }
+      props.onMouseLeave?.(e)
+    }
+    
     return (
       <Comp
         className={cn(
           buttonVariants({ variant, size }),
           variant === "outline" && variantClasses.outline,
           variant === "ghost" && variantClasses.ghost,
-          variant === "default" && `bg-[var(--color-primary)]`,
+          variant === "default" && !shouldApply3D && `bg-[var(--color-primary)]`,
           className
         )}
         style={{
           borderRadius: "var(--border-radius)",
           ...textColorStyle,
           ...hoverColorStyle,
+          ...threeDStyle,
+          transition: "all 200ms ease-out, box-shadow 200ms ease-out",
           ...props.style, // Merge with any existing styles
         }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         ref={ref}
         {...props}
       />

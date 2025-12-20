@@ -9,6 +9,8 @@ interface DesignSystemContextType {
   setButtonTextColor: (color: ButtonTextColor) => void
   borderRadius: number
   setBorderRadius: (radius: number) => void
+  enable3D: boolean
+  setEnable3D: (enabled: boolean) => void
 }
 
 const DesignSystemContext = createContext<DesignSystemContextType | undefined>(undefined)
@@ -17,6 +19,8 @@ export function DesignSystemProvider({ children }: { children: React.ReactNode }
   // Always start with default values to match server render - default to "auto" for accessibility
   const [buttonTextColor, setButtonTextColorState] = useState<ButtonTextColor>("auto")
   const [borderRadius, setBorderRadiusState] = useState<number>(8)
+  // Default to true (3D enabled) as specified
+  const [enable3D, setEnable3DState] = useState<boolean>(true)
 
   // Load from localStorage after hydration (client-side only)
   // Note: Default is always "auto" - only load saved value if user explicitly set it
@@ -37,6 +41,11 @@ export function DesignSystemProvider({ children }: { children: React.ReactNode }
         if (!isNaN(parsed)) {
           setBorderRadiusState(parsed)
         }
+      }
+
+      const savedEnable3D = localStorage.getItem("enable3D")
+      if (savedEnable3D !== null) {
+        setEnable3DState(savedEnable3D === "true")
       }
     } catch {
       // localStorage may be unavailable in some environments (e.g., incognito mode, SSR)
@@ -63,12 +72,26 @@ export function DesignSystemProvider({ children }: { children: React.ReactNode }
     }
   }, [borderRadius])
 
+  useEffect(() => {
+    const root = document.documentElement
+    root.style.setProperty("--enable-3d", enable3D ? "1" : "0")
+    try {
+      localStorage.setItem("enable3D", enable3D.toString())
+    } catch {
+      // localStorage may be unavailable
+    }
+  }, [enable3D])
+
   const setButtonTextColor = useCallback((color: ButtonTextColor) => {
     setButtonTextColorState(color)
   }, [])
 
   const setBorderRadius = useCallback((radius: number) => {
     setBorderRadiusState(radius)
+  }, [])
+
+  const setEnable3D = useCallback((enabled: boolean) => {
+    setEnable3DState(enabled)
   }, [])
 
   return (
@@ -78,6 +101,8 @@ export function DesignSystemProvider({ children }: { children: React.ReactNode }
         setButtonTextColor,
         borderRadius,
         setBorderRadius,
+        enable3D,
+        setEnable3D,
       }}
     >
       {children}

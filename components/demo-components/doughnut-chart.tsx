@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useId } from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { useTheme } from "@/components/theme-context"
 import { useColorTheme } from "@/components/color-picker/color-context"
+import { useDesignSystem } from "@/components/design-system-context"
 import { hslToHex } from "@/lib/color-utils"
 import { PieChart, Pie, Cell, ResponsiveContainer, Sector, Tooltip } from "recharts"
 
@@ -14,7 +15,17 @@ const percentage = Math.round((272 / total) * 100)
 // Matches Figma specs:
 // Dark: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.40) 100%), #DD772F
 // Light: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.20) 100%), #DD772F
-const GaugeGradientDefs = ({ id, isDark }: { id: string; isDark: boolean }) => (
+const GaugeGradientDefs = ({ 
+  id, 
+  isDark, 
+  enable3D,
+  primaryHSL 
+}: { 
+  id: string; 
+  isDark: boolean;
+  enable3D: boolean;
+  primaryHSL: { h: number; s: number; l: number };
+}) => (
   <defs>
     {/* Vertical linear gradient overlay (180deg = top to bottom) */}
     <linearGradient
@@ -35,6 +46,17 @@ const GaugeGradientDefs = ({ id, isDark }: { id: string; isDark: boolean }) => (
         stopOpacity={isDark ? 0.40 : 0.20} 
       />
     </linearGradient>
+    
+    {/* Glow filter for 3D effect */}
+    {enable3D && (
+      <filter id={`${id}-glow`} x="-100%" y="-100%" width="300%" height="300%">
+        <feGaussianBlur stdDeviation="8" result="coloredBlur" />
+        <feMerge>
+          <feMergeNode in="coloredBlur" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+    )}
   </defs>
 )
 
@@ -118,6 +140,7 @@ function useChartDimensions(containerRef: React.RefObject<HTMLDivElement | null>
 export function DoughnutChartDemo() {
   const { mode } = useTheme()
   const { theme } = useColorTheme()
+  const { enable3D } = useDesignSystem()
   const isDark = mode === "dark"
   const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
@@ -187,7 +210,12 @@ export function DoughnutChartDemo() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 {/* Gradient and filter definitions for the gauge */}
-                <GaugeGradientDefs id={gradientId} isDark={isDark} />
+                <GaugeGradientDefs 
+                  id={gradientId} 
+                  isDark={isDark} 
+                  enable3D={enable3D}
+                  primaryHSL={theme.primary}
+                />
                 
                 <Tooltip
                   wrapperStyle={{ pointerEvents: "none", visibility: "visible" }}
@@ -274,7 +302,7 @@ export function DoughnutChartDemo() {
                 >
                   <Cell fill={unconfirmedColor} stroke="none" />
                 </Pie>
-                {/* Foreground arc - base color layer with drop shadow */}
+                {/* Foreground arc - base color layer with glow when 3D enabled */}
                 <Pie
                   key={`foreground-${primaryColor}`}
                   data={foregroundData}
@@ -299,7 +327,8 @@ export function DoughnutChartDemo() {
                     style={{ 
                       cursor: "pointer",
                       transition: "all 0.2s ease-out",
-                      fill: primaryColor
+                      fill: primaryColor,
+                      filter: enable3D ? `url(#${gradientId}-glow)` : undefined,
                     }}
                   />
                 </Pie>
