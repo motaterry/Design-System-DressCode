@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { ColorSidebar } from "@/components/color-picker/color-sidebar"
 import { ColorSidebarMobile, MobileInlineTitle } from "@/components/color-picker/color-sidebar-mobile"
 import { UserProfileCard } from "@/components/demo-components/user-profile-card"
@@ -12,11 +13,45 @@ import { RadixThemesComponent } from "@/components/demo-components/radix-themes-
 import { ScrollingCardGrid } from "@/components/ui/scrolling-card-grid"
 import { useTheme } from "@/components/theme-context"
 import { useIsMobile } from "@/lib/use-media-query"
+import { Tutorial } from "@/components/onboarding/tutorial"
+import { useTutorial } from "@/lib/use-tutorial"
+import { cn } from "@/lib/utils"
 
 export default function ControlCenterPage() {
   const { mode } = useTheme()
   const isDark = mode === "dark"
   const isMobile = useIsMobile()
+  const { isCompleted, startTutorial } = useTutorial()
+  const [isSidebarMinimized, setIsSidebarMinimized] = React.useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("sidebar-minimized")
+      return saved === "true"
+    }
+    return false
+  })
+
+  // Listen for sidebar minimize state changes
+  React.useEffect(() => {
+    const handleSidebarMinimizedChange = (event: CustomEvent<{ isMinimized: boolean }>) => {
+      setIsSidebarMinimized(event.detail.isMinimized)
+    }
+
+    window.addEventListener("sidebar-minimized-changed", handleSidebarMinimizedChange as EventListener)
+    return () => {
+      window.removeEventListener("sidebar-minimized-changed", handleSidebarMinimizedChange as EventListener)
+    }
+  }, [])
+
+  // Auto-start tutorial for first-time users
+  React.useEffect(() => {
+    if (!isCompleted && typeof window !== "undefined") {
+      // Small delay to ensure page is loaded
+      const timer = setTimeout(() => {
+        startTutorial()
+      }, 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [isCompleted, startTutorial])
   
   return (
     <div className={`min-h-screen transition-colors ${
@@ -28,8 +63,14 @@ export default function ControlCenterPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
           {/* Left Column - Desktop Sidebar (hidden on mobile) */}
           {!isMobile && (
-            <aside className="lg:col-span-4 xl:col-span-3" aria-label="Sidebar">
-              <div className="sticky top-0">
+            <aside 
+              className={cn(
+                isSidebarMinimized ? "lg:col-span-1" : "lg:col-span-4 xl:col-span-3"
+              )} 
+              style={isSidebarMinimized ? { minWidth: '132px', overflow: 'visible' } : undefined}
+              aria-label="Sidebar"
+            >
+              <div className="sticky top-0" style={isSidebarMinimized ? { overflow: 'visible' } : undefined}>
                 <ColorSidebar />
               </div>
             </aside>
@@ -40,7 +81,14 @@ export default function ControlCenterPage() {
 
           {/* Right Column - Demo Components (full width on mobile) */}
           <main 
-            className={`p-4 sm:p-6 lg:p-8 ${isMobile ? 'col-span-1 pt-20' : 'lg:col-span-8 xl:col-span-9'}`} 
+            className={cn(
+              "p-4 sm:p-6 lg:p-8",
+              isMobile 
+                ? 'col-span-1 pt-20' 
+                : isSidebarMinimized 
+                  ? 'lg:col-span-11 xl:col-span-11' 
+                  : 'lg:col-span-8 xl:col-span-9'
+            )} 
             aria-label="Design system component previews"
           >
             {/* Mobile Inline Title - scrolls with content */}
@@ -93,6 +141,7 @@ export default function ControlCenterPage() {
           </main>
         </div>
       </div>
+      <Tutorial />
     </div>
   )
 }

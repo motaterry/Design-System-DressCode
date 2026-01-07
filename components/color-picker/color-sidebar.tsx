@@ -547,8 +547,8 @@ export function ColorSidebar() {
         ref={sidebarRef}
         data-sidebar-scroll
         className={cn(
-          "max-h-screen scroll-smooth overflow-y-auto",
-          isMinimized ? "px-2 py-4" : "p-4"
+          "max-h-screen scroll-smooth overflow-y-auto p-4",
+          isMinimized && "overflow-x-visible"
         )}
         style={{ 
           backgroundColor: isMinimized 
@@ -562,14 +562,15 @@ export function ColorSidebar() {
           willChange: 'scroll-position',
           overscrollBehaviorY: 'contain',
           transition: 'background-color 0.5s linear',
+          ...(isMinimized && { overflowX: 'visible' })
         }}
       >
       {/* Main container with border */}
       <div 
         className={cn(
-          "flex flex-col gap-8 rounded-3xl relative min-w-0 w-full",
-          !isMinimized && "border",
-          isMinimized && "min-w-[60px] gap-0"
+          "flex flex-col gap-8 relative rounded-3xl",
+          !isMinimized && "border min-w-0 w-full",
+          isMinimized && "gap-0 w-fit"
         )}
         style={{
           backgroundColor: isMinimized 
@@ -579,15 +580,20 @@ export function ColorSidebar() {
               : 'rgb(255, 255, 255)',
           borderColor: isMinimized 
             ? 'transparent' 
-            : isDark 
+            : (isDark 
               ? 'rgba(255, 255, 255, 0.5)' 
-              : 'rgb(209, 213, 219)',
+              : 'rgb(209, 213, 219)'),
           borderWidth: isMinimized ? '0px' : '1px',
-          transition: 'width 600ms linear 0ms, min-width 600ms linear 0ms, max-width 600ms linear 0ms, background-color 150ms linear 0ms, border-color 150ms linear 0ms, border-width 150ms linear 0ms',
-          willChange: 'width, min-width, max-width, background-color, border-color, border-width',
+          overflow: isMinimized ? 'visible' : undefined,
+          transition: isMinimized 
+            ? 'width 600ms linear 0ms, min-width 600ms linear 0ms, max-width 600ms linear 0ms, background-color 150ms linear 0ms'
+            : 'width 600ms linear 0ms, min-width 600ms linear 0ms, max-width 600ms linear 0ms, background-color 150ms linear 0ms',
+          willChange: 'width, min-width, max-width, background-color',
           ...(isMinimized && { 
             width: 'fit-content',
-            maxWidth: 'fit-content'
+            maxWidth: 'fit-content',
+            // min-width calculado: pl-4 (16px) + LogoIconOnly (32px) + gap-2 (8px) + botão (28px) + pr-4 (16px) = 100px
+            minWidth: '100px'
           })
         }}
       >
@@ -603,27 +609,31 @@ export function ColorSidebar() {
         <div 
           ref={logoRef}
           className={cn(
-            "px-4 pb-4 pt-6 rounded-t-3xl w-full",
-            isMinimized && "rounded-b-3xl px-2 w-fit mx-auto",
-            isLogoStuck && "sticky z-10 border-b",
-            isLogoStuck && (isDark ? 'border-white/50' : 'border-gray-300')
+            "pl-4 pr-4 pb-4 pt-6 w-full rounded-t-3xl",
+            isMinimized && "rounded-b-3xl pr-4 w-fit",
+            isLogoStuck && "sticky z-10"
           )}
           style={{
             transform: 'translateZ(0)',
             backgroundColor: isMinimized 
               ? 'transparent' 
-              : isDark 
-                ? "rgba(0, 0, 0, 0.6)" 
-                : "rgba(255, 255, 255, 0.7)",
-            backdropFilter: isMinimized ? 'none' : "blur(4px)",
-            WebkitBackdropFilter: isMinimized ? 'none' : "blur(4px)",
-            transition: 'border-radius 600ms linear 0ms, width 600ms linear 0ms, background-color 150ms linear 0ms, backdrop-filter 150ms linear 0ms, -webkit-backdrop-filter 150ms linear 0ms',
-            willChange: isLogoStuck ? 'transform' : 'width, border-radius, background-color, backdrop-filter',
+              : isLogoStuck
+                ? (isDark ? "rgb(0, 0, 0)" : "rgb(255, 255, 255)")
+                : (isDark 
+                  ? "rgba(0, 0, 0, 0.6)" 
+                  : "rgba(255, 255, 255, 0.7)"),
+            backdropFilter: isMinimized ? 'none' : (isLogoStuck ? 'none' : "blur(4px)"),
+            WebkitBackdropFilter: isMinimized ? 'none' : (isLogoStuck ? 'none' : "blur(4px)"),
+            border: undefined,
+            borderBottom: isLogoStuck ? (isDark ? '1px solid rgba(255, 255, 255, 1)' : '1px solid rgba(0, 0, 0, 1)') : undefined,
+            borderRadius: isLogoStuck ? '24px 24px 0 0' : undefined,
+            transition: 'width 600ms linear 0ms, background-color 150ms linear 0ms, backdrop-filter 150ms linear 0ms, -webkit-backdrop-filter 150ms linear 0ms',
+            willChange: isLogoStuck ? 'transform' : 'width, background-color, backdrop-filter',
             ...(isLogoStuck && { top: 'var(--logo-sticky-offset)' })
           }}
         >
           {isMinimized ? (
-            <div className="flex items-center justify-center gap-2 w-fit" style={{
+            <div className="flex items-center gap-2 w-fit" style={{
               transition: 'opacity 600ms linear, transform 600ms linear',
               willChange: 'opacity, transform',
             }}>
