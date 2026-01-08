@@ -8,6 +8,11 @@ import { DesignSystemProvider } from "@/components/design-system-context"
 export const metadata: Metadata = {
   title: "Control Center - Color Dashboard",
   description: "Dynamic color customization control center",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 5,
+  },
 }
 
 // Inline script to initialize theme before React hydrates - prevents flash of incorrect theme

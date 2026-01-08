@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { createPortal } from "react-dom"
 import { cn } from "@/lib/utils"
 import { useTheme } from "@/components/theme-context"
 
@@ -16,15 +17,28 @@ export function Tooltip({ children, content, side = "top", className }: TooltipP
   const isDark = mode === "dark"
   const [isVisible, setIsVisible] = React.useState(false)
   const [position, setPosition] = React.useState({ x: 0, y: 0 })
+  const [mounted, setMounted] = React.useState(false)
   const triggerRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleMouseEnter = () => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect()
-      setPosition({
-        x: rect.left + rect.width / 2,
-        y: side === "top" ? rect.top : rect.bottom,
-      })
+      // Calculate position based on side
+      if (side === "top" || side === "bottom") {
+        setPosition({
+          x: rect.left + rect.width / 2,
+          y: side === "top" ? rect.top : rect.bottom,
+        })
+      } else {
+        setPosition({
+          x: side === "left" ? rect.left : rect.right,
+          y: rect.top + rect.height / 2,
+        })
+      }
     }
     setIsVisible(true)
   }
@@ -33,14 +47,7 @@ export function Tooltip({ children, content, side = "top", className }: TooltipP
     setIsVisible(false)
   }
 
-  const sideStyles = {
-    top: "bottom-full left-1/2 -translate-x-1/2 mb-2",
-    bottom: "top-full left-1/2 -translate-x-1/2 mt-2",
-    left: "right-full top-1/2 -translate-y-1/2 mr-2",
-    right: "left-full top-1/2 -translate-y-1/2 ml-2",
-  }
-
-  // Arrow position styles
+  // Arrow position styles (relative to tooltip)
   const arrowStyles = {
     top: "top-full left-1/2 -translate-x-1/2 -mt-1",
     bottom: "bottom-full left-1/2 -translate-x-1/2 -mb-1",
@@ -56,21 +63,30 @@ export function Tooltip({ children, content, side = "top", className }: TooltipP
         onMouseLeave={handleMouseLeave}
         onFocus={handleMouseEnter}
         onBlur={handleMouseLeave}
-        className="inline-block"
+        className="contents"
       >
         {children}
       </div>
-      {isVisible && (
+      {isVisible && mounted && typeof window !== "undefined" && createPortal(
         <div
           className={cn(
-            "absolute z-50 pointer-events-none whitespace-nowrap",
-            sideStyles[side],
+            "fixed z-50 pointer-events-none whitespace-nowrap",
             className
           )}
           style={{
-            left: side === "left" || side === "right" ? "auto" : `${position.x}px`,
-            top: side === "top" || side === "bottom" ? "auto" : `${position.y}px`,
-            transform: "none",
+            left: side === "top" || side === "bottom" 
+              ? `${position.x}px` 
+              : side === "left"
+              ? `${position.x - 8}px`
+              : `${position.x + 8}px`,
+            top: side === "top" || side === "bottom"
+              ? side === "top"
+                ? `${position.y - 8}px`
+                : `${position.y + 8}px`
+              : `${position.y}px`,
+            transform: side === "top" || side === "bottom" 
+              ? "translateX(-50%)" 
+              : "translateY(-50%)",
             backgroundColor: isDark ? "rgba(0, 0, 0, 0.6)" : "rgba(255, 255, 255, 0.7)",
             border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.1)",
             borderRadius: "6px",
@@ -101,7 +117,8 @@ export function Tooltip({ children, content, side = "top", className }: TooltipP
               borderStyle: "solid",
             }}
           />
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )

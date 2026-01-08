@@ -7,6 +7,7 @@ import { useColorTheme } from "./color-context"
 import { useTheme } from "@/components/theme-context"
 import { useDesignSystem } from "@/components/design-system-context"
 import { hslToHex } from "@/lib/color-utils"
+import { Tooltip } from "@/components/ui/tooltip"
 
 interface ExportModalProps {
   isOpen: boolean
@@ -315,17 +316,17 @@ ${theme.neutralDarker.map((color, i) => `$neutral-dark-${(i + 1) * 10}: ${color}
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {formats.map((format) => (
-                <button
-                  key={format.id}
-                  onClick={() => setSelectedFormat(format.id)}
-                  className={`p-3 rounded-xl border-2 transition-all text-left flex flex-col min-h-[100px] ${
-                    selectedFormat === format.id
-                      ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10"
-                      : isDark 
-                        ? "border-white/10 hover:border-white/20 bg-white/5" 
-                        : "border-gray-200 hover:border-gray-300 bg-gray-50"
-                  }`}
-                >
+                <Tooltip key={format.id} content={format.desc} side="top">
+                  <button
+                    onClick={() => setSelectedFormat(format.id)}
+                    className={`p-3 rounded-xl border-2 transition-all text-left flex flex-col min-h-[100px] ${
+                      selectedFormat === format.id
+                        ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                        : isDark 
+                          ? "border-white/10 hover:border-white/20 bg-white/5" 
+                          : "border-gray-200 hover:border-gray-300 bg-gray-50"
+                    }`}
+                  >
                   <format.icon className={`w-5 h-5 mb-2 flex-shrink-0 ${
                     selectedFormat === format.id 
                       ? "text-[var(--color-primary)]" 
@@ -338,6 +339,7 @@ ${theme.neutralDarker.map((color, i) => `$neutral-dark-${(i + 1) * 10}: ${color}
                     {format.desc}
                   </div>
                 </button>
+                </Tooltip>
               ))}
             </div>
           </div>
@@ -359,28 +361,32 @@ ${theme.neutralDarker.map((color, i) => `$neutral-dark-${(i + 1) * 10}: ${color}
 
         {/* Footer */}
         <div className={`px-6 py-4 border-t flex gap-3 ${isDark ? "border-white/10" : "border-gray-200"}`}>
-          <button
-            onClick={handleCopy}
-            className={`flex-1 py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 transition-all ${
-              isDark 
-                ? "bg-white/10 hover:bg-white/15 text-white" 
-                : "bg-gray-100 hover:bg-gray-200 text-gray-900"
-            }`}
-          >
-            {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
-            {copied ? "Copied!" : "Copy"}
-          </button>
-          <button
-            onClick={handleDownload}
-            className={`flex-1 py-3 px-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] ${
-              isDark 
-                ? "bg-white text-gray-900 hover:bg-gray-100" 
-                : "bg-gray-900 text-white hover:bg-gray-800"
-            }`}
-          >
-            <Download className="w-5 h-5" />
-            Download
-          </button>
+          <Tooltip content="Copy export code to clipboard" side="top">
+            <button
+              onClick={handleCopy}
+              className={`flex-1 py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 transition-all ${
+                isDark 
+                  ? "bg-white/10 hover:bg-white/15 text-white" 
+                  : "bg-gray-100 hover:bg-gray-200 text-gray-900"
+              }`}
+            >
+              {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+              {copied ? "Copied!" : "Copy"}
+            </button>
+          </Tooltip>
+          <Tooltip content="Download theme file" side="top">
+            <button
+              onClick={handleDownload}
+              className={`flex-1 py-3 px-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] ${
+                isDark 
+                  ? "bg-white text-gray-900 hover:bg-gray-100" 
+                  : "bg-gray-900 text-white hover:bg-gray-800"
+              }`}
+            >
+              <Download className="w-5 h-5" />
+              Download
+            </button>
+          </Tooltip>
         </div>
       </div>
     </div>

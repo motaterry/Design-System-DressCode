@@ -3,6 +3,7 @@
 import React, { useRef, useEffect, useState, useCallback } from "react"
 import { useColorTheme } from "./color-context"
 import { hslToHex } from "@/lib/color-utils"
+import { Tooltip } from "@/components/ui/tooltip"
 
 export function ColorWheel() {
   const { theme, updatePrimaryColor } = useColorTheme()
@@ -193,6 +194,7 @@ export function ColorWheel() {
   return (
     <div className="flex justify-center w-full px-2">
       <div className="relative w-full max-w-[320px] aspect-square" ref={wheelRef}>
+        <Tooltip content="Drag to select color • Use arrow keys to adjust hue • Shift+Arrow for larger steps • Home/End for extremes" side="bottom">
           <div
             ref={containerRef}
             role="slider"
@@ -270,7 +272,8 @@ export function ColorWheel() {
               />
             </div>
           </div>
-        </div>
+        </Tooltip>
       </div>
+    </div>
   )
 }

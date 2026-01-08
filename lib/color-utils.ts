@@ -146,7 +146,7 @@ export function getComplementaryColor(hue: number): number {
  * Format HSL values for display
  */
 export function formatHsl(h: number, s: number, l: number): string {
-  return `${Math.round(h)}°, ${Math.round(s)}%, ${Math.round(l)}%`
+  return `${Math.round(h)}°  ${Math.round(s)}%  ${Math.round(l)}%`
 }
 
 /**

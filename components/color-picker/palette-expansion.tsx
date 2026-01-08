@@ -5,6 +5,7 @@ import { useColorTheme } from "./color-context"
 import { useToast } from "@/components/ui/toast"
 import { useTheme } from "@/components/theme-context"
 import { ChevronDown } from "lucide-react"
+import { Tooltip } from "@/components/ui/tooltip"
 
 const PERCENTAGES = [5, 20, 30, 40, 50, 60, 70, 80, 90]
 
@@ -111,12 +112,13 @@ function PaletteSection({
 }) {
   return (
     <div>
-      <button
-        onClick={onToggle}
-        aria-expanded={isExpanded}
-        aria-controls={`palette-section-${title.toLowerCase().replace(/\s+/g, "-")}`}
-        className="w-full flex justify-between items-center pb-2 mb-4 border-b border-white/10 hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 focus:ring-offset-slate-800 rounded px-1"
-      >
+      <Tooltip content={`Click to expand/collapse ${title}`} side="right">
+        <button
+          onClick={onToggle}
+          aria-expanded={isExpanded}
+          aria-controls={`palette-section-${title.toLowerCase().replace(/\s+/g, "-")}`}
+          className="w-full flex justify-between items-center pb-2 mb-4 border-b border-white/10 hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 focus:ring-offset-slate-800 rounded px-1"
+        >
         <h3 className="text-sm font-light text-slate-400">{title}</h3>
         <ChevronDown
           className={`w-4 h-4 text-slate-500 transition-transform ${
@@ -125,6 +127,7 @@ function PaletteSection({
           aria-hidden="true"
         />
       </button>
+      </Tooltip>
       {isExpanded && (
         <div
           id={`palette-section-${title.toLowerCase().replace(/\s+/g, "-")}`}
@@ -159,13 +162,14 @@ function ColorSwatch({
   isDark: boolean
 }) {
   return (
-    <button
-      onClick={() => onCopy(color)}
-      aria-label={`Copy color ${color} to clipboard`}
-      className={`bg-slate-800/70 backdrop-blur-sm border rounded-xl p-2 flex flex-col gap-1 cursor-pointer transition-all hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 focus:ring-offset-slate-800 ${
-        isDark ? "border-white/50" : "border-gray-300"
-      }`}
-    >
+    <Tooltip content="Copy color value to clipboard" side="top">
+      <button
+        onClick={() => onCopy(color)}
+        aria-label={`Copy color ${color} to clipboard`}
+        className={`bg-slate-800/70 backdrop-blur-sm border rounded-xl p-2 flex flex-col gap-1 cursor-pointer transition-all hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 focus:ring-offset-slate-800 ${
+          isDark ? "border-white/50" : "border-gray-300"
+        }`}
+      >
       <div
         className="w-full h-10 rounded-lg shadow-inner"
         style={{ backgroundColor: color }}
@@ -178,5 +182,6 @@ function ColorSwatch({
         </span>
       </div>
     </button>
+    </Tooltip>
   )
 }

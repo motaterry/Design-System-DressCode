@@ -12,7 +12,7 @@ import {
   getAccessibleTextColor,
   normalizeHex,
 } from "@/lib/color-utils"
-import { ChevronDown, Palette, Settings, Layers, Download, Box } from "lucide-react"
+import { ChevronDown, Palette, Settings, Layers, Download, Box, ShieldCheck, Undo2, Redo2 } from "lucide-react"
 import { useToast } from "@/components/ui/toast"
 import { cn } from "@/lib/utils"
 import { BottomSheet } from "@/components/ui/bottom-sheet"
@@ -20,8 +20,12 @@ import { DresscodeLogo } from "@/components/logo/dresscode-logo"
 import { Pencil } from "lucide-react"
 import { ExportModal } from "./export-modal"
 import { Switch } from "@/components/ui/switch"
+import { Tooltip } from "@/components/ui/tooltip"
+import { AccessibilityChecker } from "./accessibility-checker"
+import { ColorPresets } from "./color-presets"
+import { ContrastChecker } from "./contrast-checker"
 
-type TabId = "colors" | "settings" | "palettes"
+type TabId = "colors" | "settings" | "palettes" | "accessibility"
 
 const PERCENTAGES = [5, 20, 30, 40, 50, 60, 70, 80, 90]
 
@@ -32,6 +36,7 @@ export function ColorSidebarMobile() {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false)
   const { mode } = useTheme()
   const { borderRadius } = useDesignSystem()
+  const { undo, redo, canUndo, canRedo } = useColorTheme()
   const isDark = mode === "dark"
 
   // Track scroll position to show/hide header content
@@ -66,28 +71,83 @@ export function ColorSidebarMobile() {
           {/* Tab Navigation */}
           <TabBar activeTab={activeTab} setActiveTab={setActiveTab} isDark={isDark} />
 
+          {/* Undo/Redo Controls */}
+          {activeTab === "colors" && (
+            <div className="flex gap-1 px-4 pb-2 justify-start items-center">
+              <Tooltip content="Undo (Cmd/Ctrl+Z)" side="top">
+                <button
+                  onClick={undo}
+                  disabled={!canUndo}
+                  className={cn(
+                    "p-2 rounded-md transition-all duration-200 ease-out",
+                    "focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]",
+                    "min-w-[44px] min-h-[44px]", // Touch target size
+                    canUndo
+                      ? isDark
+                        ? "bg-white/10 hover:bg-white/15 text-white"
+                        : "bg-gray-100 hover:bg-gray-200 text-gray-900"
+                      : isDark
+                        ? "bg-white/5 text-white/30 cursor-not-allowed"
+                        : "bg-gray-50 text-gray-300 cursor-not-allowed"
+                  )}
+                  aria-label="Undo color change"
+                >
+                  <Undo2 className="w-4 h-4" />
+                </button>
+              </Tooltip>
+              <Tooltip content="Redo (Cmd/Ctrl+Shift+Z)" side="top">
+                <button
+                  onClick={redo}
+                  disabled={!canRedo}
+                  className={cn(
+                    "p-2 rounded-md transition-all duration-200 ease-out",
+                    "focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]",
+                    "min-w-[44px] min-h-[44px]", // Touch target size
+                    canRedo
+                      ? isDark
+                        ? "bg-white/10 hover:bg-white/15 text-white"
+                        : "bg-gray-100 hover:bg-gray-200 text-gray-900"
+                      : isDark
+                        ? "bg-white/5 text-white/30 cursor-not-allowed"
+                        : "bg-gray-50 text-gray-300 cursor-not-allowed"
+                  )}
+                  aria-label="Redo color change"
+                >
+                  <Redo2 className="w-4 h-4" />
+                </button>
+              </Tooltip>
+            </div>
+          )}
+
           {/* Tab Content */}
           <div className="flex-1 overflow-y-auto px-4 pb-8">
             {activeTab === "colors" && <ColorsTab isDark={isDark} />}
             {activeTab === "settings" && <SettingsTab isDark={isDark} />}
             {activeTab === "palettes" && <PalettesTab isDark={isDark} />}
+            {activeTab === "accessibility" && (
+              <div className="py-4">
+                <AccessibilityChecker />
+              </div>
+            )}
             
             {/* Export Button - shown on all tabs */}
             <div className="pt-6 pb-8">
-              <button
-                onClick={() => setIsExportModalOpen(true)}
-                className={cn(
-                  "w-full py-3.5 px-4 font-semibold flex items-center justify-center gap-2.5",
-                  "transition-colors duration-200 ease-out",
-                  isDark 
-                    ? "bg-white text-gray-900 hover:bg-gray-100" 
-                    : "bg-gray-900 text-white hover:bg-gray-800"
-                )}
-                style={{ borderRadius: `${borderRadius}px` }}
-              >
-                <Download className="w-5 h-5" />
-                Export Theme
-              </button>
+              <Tooltip content="Export theme as CSS, Tailwind, JSON, or SCSS" side="top">
+                <button
+                  onClick={() => setIsExportModalOpen(true)}
+                  className={cn(
+                    "w-full py-3.5 px-4 font-semibold flex items-center justify-center gap-2.5",
+                    "transition-colors duration-200 ease-out",
+                    isDark 
+                      ? "bg-white text-gray-900 hover:bg-gray-100" 
+                      : "bg-gray-900 text-white hover:bg-gray-800"
+                  )}
+                  style={{ borderRadius: `${borderRadius}px` }}
+                >
+                  <Download className="w-5 h-5" />
+                  Export Theme
+                </button>
+              </Tooltip>
               <p className={cn(
                 "text-xs text-center mt-2.5",
                 isDark ? "text-white/50" : "text-gray-500"
@@ -131,19 +191,21 @@ function MobileHeader({
       {/* Top row: Logo + Edit button */}
       <div className="flex items-center justify-between">
         <DresscodeLogo className={cn("h-[18px] w-auto", isDark ? "text-white" : "text-gray-900")} />
-        <button
-          onClick={onOpenControls}
-          aria-label="Open design controls"
-          className={cn(
-            "w-10 h-10 flex items-center justify-center rounded-lg",
-            "transition-colors",
-            isDark
-              ? "bg-white text-gray-900 hover:bg-gray-100"
-              : "bg-gray-900 text-white hover:bg-gray-800"
-          )}
-        >
-          <Pencil size={20} />
-        </button>
+        <Tooltip content="Open design controls" side="bottom">
+          <button
+            onClick={onOpenControls}
+            aria-label="Open design controls"
+            className={cn(
+              "w-10 h-10 flex items-center justify-center rounded-lg",
+              "transition-colors",
+              isDark
+                ? "bg-white text-gray-900 hover:bg-gray-100"
+                : "bg-gray-900 text-white hover:bg-gray-800"
+            )}
+          >
+            <Pencil size={20} />
+          </button>
+        </Tooltip>
       </div>
       
       {/* Title (slides in when scrolled) */}
@@ -204,53 +266,66 @@ function TabBar({
     { id: "colors", label: "Colors", icon: <Palette size={18} /> },
     { id: "settings", label: "Settings", icon: <Settings size={18} /> },
     { id: "palettes", label: "Palettes", icon: <Layers size={18} /> },
+    { id: "accessibility", label: "Accessibility", icon: <ShieldCheck size={18} /> },
   ]
 
   return (
-    <div className="flex items-stretch px-4 pt-2 pb-4">
-      {tabs.map((tab, index) => {
-        const isFirst = index === 0
-        const isLast = index === tabs.length - 1
-        const isSelected = activeTab === tab.id
-        
-        return (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-3 px-3",
-              "min-h-[48px] transition-all duration-200 ease-out",
-              isFirst && "rounded-l-lg",
-              isLast && "rounded-r-lg",
-              !isLast && "border-r-0",
-              isSelected
-                ? isDark
-                  ? "bg-white/10 border border-white/50"
-                  : "bg-gray-200 border border-gray-300"
-                : isDark
-                ? "bg-transparent border border-white/50"
-                : "bg-transparent border border-gray-300"
-            )}
-            aria-pressed={isSelected}
-          >
-            <span className={cn(
-              isSelected
-                ? isDark ? "text-white" : "text-gray-900"
-                : isDark ? "text-white/40" : "text-gray-400"
-            )}>
-              {tab.icon}
-            </span>
-            <span className={cn(
-              "text-sm font-bold",
-              isSelected
-                ? isDark ? "text-white" : "text-gray-900"
-                : isDark ? "text-white/40" : "text-gray-400"
-            )}>
-              {tab.label}
-            </span>
-          </button>
-        )
-      })}
+    <div className="px-4 pt-2 pb-4 overflow-hidden">
+      <div 
+        className="flex items-stretch overflow-x-auto overflow-y-hidden scrollbar-hide"
+        style={{
+          WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+        }}
+      >
+        {tabs.map((tab, index) => {
+          const isFirst = index === 0
+          const isLast = index === tabs.length - 1
+          const isSelected = activeTab === tab.id
+          
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                "flex items-center justify-center gap-2 py-3 px-4",
+                "min-h-[48px] transition-all duration-200 ease-out",
+                "flex-shrink-0 whitespace-nowrap",
+                "min-w-fit",
+                isFirst && "rounded-l-lg",
+                isLast && "rounded-r-lg",
+                !isLast && "border-r-0",
+                isSelected
+                  ? isDark
+                    ? "bg-white/10 border border-white/50"
+                    : "bg-gray-200 border border-gray-300"
+                  : isDark
+                  ? "bg-transparent border border-white/50"
+                  : "bg-transparent border border-gray-300"
+              )}
+              aria-pressed={isSelected}
+            >
+              <span className={cn(
+                "flex-shrink-0",
+                isSelected
+                  ? isDark ? "text-white" : "text-gray-900"
+                  : isDark ? "text-white/40" : "text-gray-400"
+              )}>
+                {tab.icon}
+              </span>
+              <span className={cn(
+                "text-sm font-bold whitespace-nowrap",
+                isSelected
+                  ? isDark ? "text-white" : "text-gray-900"
+                  : isDark ? "text-white/40" : "text-gray-400"
+              )}>
+                {tab.label}
+              </span>
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -259,6 +334,7 @@ function TabBar({
 function ColorsTab({ isDark }: { isDark: boolean }) {
   const { theme, updatePrimaryFromHex, updateComplementaryFromHex } = useColorTheme()
   const { addToast } = useToast()
+  const { borderRadius } = useDesignSystem()
 
   const primaryHex = hslToHex(theme.primary.h, theme.primary.s, theme.primary.l)
   const compHex = hslToHex(
@@ -283,6 +359,38 @@ function ColorsTab({ isDark }: { isDark: boolean }) {
     setIsValidCompHex(true)
   }, [compHex])
 
+  const handlePrimaryInput = (value: string) => {
+    setCustomHexInput(value)
+    // Real-time validation feedback
+    if (value === "") {
+      setIsValidHex(true)
+    } else {
+      const trimmed = value.trim()
+      const hexPattern = /^#?([a-f\d]{0,6})$/i
+      setIsValidHex(hexPattern.test(trimmed))
+    }
+  }
+
+  const handlePrimaryPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault()
+    const pastedText = e.clipboardData.getText().trim()
+    const normalized = normalizeHex(pastedText)
+    if (normalized) {
+      setCustomHexInput(normalized)
+      setIsValidHex(true)
+      updatePrimaryFromHex(normalized)
+      addToast({
+        title: "Color pasted!",
+        description: `Brand color set to ${normalized}`,
+        variant: "success",
+        duration: 2000,
+      })
+    } else {
+      setCustomHexInput(pastedText)
+      setIsValidHex(false)
+    }
+  }
+
   const handlePrimaryBlur = () => {
     if (!customHexInput.trim()) {
       setCustomHexInput(primaryHex)
@@ -302,6 +410,38 @@ function ColorsTab({ isDark }: { isDark: boolean }) {
     updatePrimaryFromHex(normalized)
     setCustomHexInput(normalized)
     setIsValidHex(true)
+  }
+
+  const handleCompInput = (value: string) => {
+    setCustomCompHexInput(value)
+    // Real-time validation feedback
+    if (value === "") {
+      setIsValidCompHex(true)
+    } else {
+      const trimmed = value.trim()
+      const hexPattern = /^#?([a-f\d]{0,6})$/i
+      setIsValidCompHex(hexPattern.test(trimmed))
+    }
+  }
+
+  const handleCompPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault()
+    const pastedText = e.clipboardData.getText().trim()
+    const normalized = normalizeHex(pastedText)
+    if (normalized) {
+      setCustomCompHexInput(normalized)
+      setIsValidCompHex(true)
+      updateComplementaryFromHex(normalized)
+      addToast({
+        title: "Color pasted!",
+        description: `Complementary color set to ${normalized}`,
+        variant: "success",
+        duration: 2000,
+      })
+    } else {
+      setCustomCompHexInput(pastedText)
+      setIsValidCompHex(false)
+    }
   }
 
   const handleCompBlur = () => {
@@ -345,29 +485,37 @@ function ColorsTab({ isDark }: { isDark: boolean }) {
           Primary Color
         </label>
         <div className="flex gap-3 items-center">
-          <input
-            type="text"
-            value={customHexInput}
-            onChange={(e) => setCustomHexInput(e.target.value)}
-            onBlur={handlePrimaryBlur}
-            className={cn(
-              "flex-1 h-12 px-4 rounded-lg border font-mono text-base",
-              isDark
-                ? "bg-white/5 border-white/20 text-white"
-                : "bg-gray-50 border-gray-300 text-gray-900",
-              !isValidHex && "border-red-500"
-            )}
-          />
-          <input
-            type="color"
-            value={primaryHex}
-            onChange={(e) => {
-              updatePrimaryFromHex(e.target.value)
-              setCustomHexInput(e.target.value)
-            }}
-            className="w-12 h-12 rounded-lg cursor-pointer border-0"
-            style={{ backgroundColor: primaryHex }}
-          />
+          <Tooltip content="Enter hex color code (e.g., #FF5733)" side="top">
+            <input
+              type="text"
+              value={customHexInput}
+              onChange={(e) => handlePrimaryInput(e.target.value)}
+              onBlur={handlePrimaryBlur}
+              onPaste={handlePrimaryPaste}
+              className={cn(
+                "flex-1 h-12 px-4 rounded-lg border font-mono text-base",
+                isDark
+                  ? "bg-white/5 border-white/20 text-white"
+                  : "bg-gray-50 border-gray-300 text-gray-900",
+                !isValidHex && "border-red-500"
+              )}
+            />
+          </Tooltip>
+          <Tooltip content="Visual primary color picker" side="top">
+            <input
+              type="color"
+              value={primaryHex}
+              onChange={(e) => {
+                updatePrimaryFromHex(e.target.value)
+                setCustomHexInput(e.target.value)
+              }}
+              className="w-12 h-12 cursor-pointer border-0"
+              style={{ 
+                backgroundColor: primaryHex,
+                borderRadius: `${borderRadius}px`,
+              }}
+            />
+          </Tooltip>
         </div>
       </div>
 
@@ -382,31 +530,56 @@ function ColorsTab({ isDark }: { isDark: boolean }) {
           Complementary Color
         </label>
         <div className="flex gap-3 items-center">
-          <input
-            type="text"
-            value={customCompHexInput}
-            onChange={(e) => setCustomCompHexInput(e.target.value)}
-            onBlur={handleCompBlur}
-            className={cn(
-              "flex-1 h-12 px-4 rounded-lg border font-mono text-base",
-              isDark
-                ? "bg-white/5 border-white/20 text-white"
-                : "bg-gray-50 border-gray-300 text-gray-900",
-              !isValidCompHex && "border-red-500"
-            )}
-          />
-          <input
-            type="color"
-            value={compHex}
-            onChange={(e) => {
-              updateComplementaryFromHex(e.target.value)
-              setCustomCompHexInput(e.target.value)
-            }}
-            className="w-12 h-12 rounded-lg cursor-pointer border-0"
-            style={{ backgroundColor: compHex }}
-          />
+          <Tooltip content="Enter hex color code (e.g., #5733FF)" side="top">
+            <input
+              type="text"
+              value={customCompHexInput}
+              onChange={(e) => handleCompInput(e.target.value)}
+              onBlur={handleCompBlur}
+              onPaste={handleCompPaste}
+              className={cn(
+                "flex-1 h-12 px-4 rounded-lg border font-mono text-base",
+                isDark
+                  ? "bg-white/5 border-white/20 text-white"
+                  : "bg-gray-50 border-gray-300 text-gray-900",
+                !isValidCompHex && "border-red-500"
+              )}
+            />
+          </Tooltip>
+          <Tooltip content="Visual complementary color picker" side="top">
+            <input
+              type="color"
+              value={compHex}
+              onChange={(e) => {
+                updateComplementaryFromHex(e.target.value)
+                setCustomCompHexInput(e.target.value)
+              }}
+              className="w-12 h-12 cursor-pointer border-0"
+              style={{ 
+                backgroundColor: compHex,
+                borderRadius: `${borderRadius}px`,
+              }}
+            />
+          </Tooltip>
         </div>
       </div>
+
+      {/* Divider */}
+      <div className={cn(
+        "h-px w-full",
+        isDark ? "bg-white/50" : "bg-gray-300"
+      )} />
+
+      {/* Color Presets Section */}
+      <div className="py-4">
+        <ColorPresets />
+      </div>
+
+      {/* Divider */}
+      <div className={cn(
+        "h-px w-full",
+        isDark ? "bg-white/50" : "bg-gray-300"
+      )} />
 
       {/* Color Info Cards */}
       <div className="flex flex-col gap-[21px]">
@@ -460,15 +633,17 @@ function SettingsTab({ isDark }: { isDark: boolean }) {
         >
           Mode
         </span>
-        <SegmentedControl
-          options={[
-            { id: "dark", label: "Dark" },
-            { id: "light", label: "Light" },
-          ]}
-          value={mode}
-          onChange={(v) => setMode(v as "dark" | "light")}
-          isDark={isDark}
-        />
+        <Tooltip content={`Switch to ${mode === "dark" ? "light" : "dark"} mode`} side="top">
+          <SegmentedControl
+            options={[
+              { id: "dark", label: "Dark" },
+              { id: "light", label: "Light" },
+            ]}
+            value={mode}
+            onChange={(v) => setMode(v as "dark" | "light")}
+            isDark={isDark}
+          />
+        </Tooltip>
       </div>
 
       {/* Button Text Color */}
@@ -481,16 +656,18 @@ function SettingsTab({ isDark }: { isDark: boolean }) {
         >
           Button Text Color
         </span>
-        <SegmentedControl
-          options={[
-            { id: "auto", label: "Auto" },
-            { id: "dark", label: "Black" },
-            { id: "light", label: "White" },
-          ]}
-          value={buttonTextColor}
-          onChange={(v) => setButtonTextColor(v as "auto" | "dark" | "light")}
-          isDark={isDark}
-        />
+        <Tooltip content={`Set button text color to ${buttonTextColor === "auto" ? "auto (automatic contrast)" : buttonTextColor === "dark" ? "black" : "white"}`} side="top">
+          <SegmentedControl
+            options={[
+              { id: "auto", label: "Auto" },
+              { id: "dark", label: "Black" },
+              { id: "light", label: "White" },
+            ]}
+            value={buttonTextColor}
+            onChange={(v) => setButtonTextColor(v as "auto" | "dark" | "light")}
+            isDark={isDark}
+          />
+        </Tooltip>
         {buttonTextColor === "auto" && (
           <div
             className={cn(
@@ -561,19 +738,21 @@ function SettingsTab({ isDark }: { isDark: boolean }) {
                 : "bg-gray-200 border border-gray-300 group-hover:border-gray-400"
             )}
           />
-          <input
-            type="range"
-            min="0"
-            max="32"
-            step="1"
-            value={borderRadius}
-            onChange={(e) => setBorderRadius(parseInt(e.target.value, 10))}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            aria-label="Border radius slider"
-            aria-valuemin={0}
-            aria-valuemax={32}
-            aria-valuenow={Number(borderRadius)}
-          />
+          <Tooltip content="Adjust border radius (0-32px)" side="top">
+            <input
+              type="range"
+              min="0"
+              max="32"
+              step="1"
+              value={borderRadius}
+              onChange={(e) => setBorderRadius(parseInt(e.target.value, 10))}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              aria-label="Border radius slider"
+              aria-valuemin={0}
+              aria-valuemax={32}
+              aria-valuenow={Number(borderRadius)}
+            />
+          </Tooltip>
           {/* Slider thumb indicator - bigger with darker border like desktop */}
           <div 
             className="absolute top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white shadow-lg border-2 pointer-events-none transition-all duration-200 ease-out"
@@ -603,18 +782,41 @@ function SettingsTab({ isDark }: { isDark: boolean }) {
           </span>
         </div>
         
-        <div className="flex items-center justify-between">
-          <span className={cn(
-            "text-sm",
-            isDark ? "text-white/70" : "text-gray-600"
-          )}>
-            {enable3D ? "Enabled" : "Disabled"}
-          </span>
-          <Switch
-            checked={enable3D}
-            onCheckedChange={setEnable3D}
-            aria-label="Toggle 3D effects"
+        <Tooltip content="Enable/disable 3D shadow effects" side="top">
+          <div className="flex items-center justify-between">
+            <span className={cn(
+              "text-sm",
+              isDark ? "text-white/70" : "text-gray-600"
+            )}>
+              {enable3D ? "Enabled" : "Disabled"}
+            </span>
+            <Switch
+              checked={enable3D}
+              onCheckedChange={setEnable3D}
+              aria-label="Toggle 3D effects"
+            />
+          </div>
+        </Tooltip>
+      </div>
+
+      {/* Contrast Checker */}
+      <div className="flex flex-col gap-3">
+        <div className="flex gap-2.5 items-center">
+          <Box 
+            size={16} 
+            className={isDark ? "text-white" : "text-gray-900"}
           />
+          <span
+            className={cn(
+              "text-lg font-bold leading-[26px] tracking-[-0.04px]",
+              isDark ? "text-[#bbb]" : "text-gray-600"
+            )}
+          >
+            Contrast Checker
+          </span>
+        </div>
+        <div>
+          <ContrastChecker />
         </div>
       </div>
     </div>
@@ -784,29 +986,34 @@ function ColorInfoCardMobile({
         <div className="flex flex-col">
           <div className="flex items-center justify-between text-[11px] leading-5 min-h-[36px]">
             <span className={isDark ? "text-[#c5c1bd]" : "text-gray-600"}>HEX</span>
-            <button
-              onClick={() => copyToClipboard(hex)}
-              className={cn(
-                "hover:opacity-80 transition-colors font-mono cursor-pointer",
-                isDark ? "text-white" : "text-gray-900"
-              )}
-              aria-label={`Copy ${label} hex value: ${hex}`}
-            >
-              {hex}
-            </button>
+            <Tooltip content={`Copy ${label} hex value to clipboard`} side="left">
+              <button
+                onClick={() => copyToClipboard(hex)}
+                className={cn(
+                  "hover:opacity-80 transition-colors font-mono cursor-pointer",
+                  isDark ? "text-white" : "text-gray-900"
+                )}
+                aria-label={`Copy ${label} hex value: ${hex}`}
+              >
+                {hex}
+              </button>
+            </Tooltip>
           </div>
           <div className="flex items-center justify-between text-[11px] leading-5 min-h-[36px]">
             <span className={isDark ? "text-[#c5c1bd]" : "text-gray-600"}>HSL</span>
-            <button
-              onClick={() => copyToClipboard(hsl)}
-              className={cn(
-                "hover:opacity-80 transition-colors font-mono cursor-pointer",
-                isDark ? "text-white" : "text-gray-900"
-              )}
-              aria-label={`Copy ${label} HSL value: ${hsl}`}
-            >
-              {hsl}
-            </button>
+            <Tooltip content={`Copy ${label} HSL value to clipboard`} side="left">
+              <button
+                onClick={() => copyToClipboard(hsl)}
+                className={cn(
+                  "hover:opacity-80 transition-colors font-mono cursor-pointer",
+                  isDark ? "text-white" : "text-gray-900"
+                )}
+                style={{ letterSpacing: '0.05em' }}
+                aria-label={`Copy ${label} HSL value: ${hsl}`}
+              >
+                {hsl}
+              </button>
+            </Tooltip>
           </div>
         </div>
       </div>
@@ -851,19 +1058,20 @@ function PaletteSectionMobile({
 
   return (
     <div>
-      <button
-        onClick={onToggle}
-        aria-expanded={isExpanded}
-        aria-controls={`palette-section-mobile-${title.toLowerCase().replace(/\s+/g, "-")}`}
-        className={cn(
-          "w-full flex items-center justify-between pl-4 pr-2 py-1 rounded-lg",
-          "transition-all duration-200 ease-out cursor-pointer",
-          "focus:outline-none focus:ring-1",
-          isDark 
-            ? "hover:bg-white/5 focus:ring-white/30" 
-            : "hover:bg-gray-200 focus:ring-gray-400"
-        )}
-      >
+      <Tooltip content={`Click to expand/collapse ${title}`} side="right">
+        <button
+          onClick={onToggle}
+          aria-expanded={isExpanded}
+          aria-controls={`palette-section-mobile-${title.toLowerCase().replace(/\s+/g, "-")}`}
+          className={cn(
+            "w-full flex items-center justify-between pl-4 pr-2 py-1 rounded-lg",
+            "transition-all duration-200 ease-out cursor-pointer",
+            "focus:outline-none focus:ring-1",
+            isDark 
+              ? "hover:bg-white/5 focus:ring-white/30" 
+              : "hover:bg-gray-200 focus:ring-gray-400"
+          )}
+        >
         <span className={cn(
           "text-lg leading-[26px] tracking-[-0.04px]",
           isDark ? "text-[#bbb]" : "text-gray-700"
@@ -881,6 +1089,7 @@ function PaletteSectionMobile({
           />
         </div>
       </button>
+      </Tooltip>
       {isExpanded && (
         <div
           id={`palette-section-mobile-${title.toLowerCase().replace(/\s+/g, "-")}`}
@@ -889,19 +1098,19 @@ function PaletteSectionMobile({
           aria-label={`${title} color swatches`}
         >
           {colors.map((color, index) => (
-            <button
-              key={index}
-              onClick={() => copyToClipboard(color)}
-              aria-label={`Copy color ${color} to clipboard`}
-              className={cn(
-                "backdrop-blur-sm border rounded-xl p-3 flex flex-col gap-2",
-                "cursor-pointer transition-all duration-200 ease-out",
-                "hover:shadow-lg focus:outline-none focus:ring-1",
-                isDark 
-                  ? "bg-neutral-800/70 border-neutral-700/30 focus:ring-white/30" 
-                  : "bg-neutral-50 border-neutral-300/50 focus:ring-gray-400"
-              )}
-            >
+            <Tooltip key={index} content="Copy color value to clipboard" side="top">
+              <button
+                onClick={() => copyToClipboard(color)}
+                aria-label={`Copy color ${color} to clipboard`}
+                className={cn(
+                  "backdrop-blur-sm border rounded-xl p-3 flex flex-col gap-2",
+                  "cursor-pointer transition-all duration-200 ease-out",
+                  "hover:shadow-lg focus:outline-none focus:ring-1",
+                  isDark 
+                    ? "bg-neutral-800/70 border-neutral-700/30 focus:ring-white/30" 
+                    : "bg-neutral-50 border-neutral-300/50 focus:ring-gray-400"
+                )}
+              >
               <div
                 className="w-full h-12 rounded-lg shadow-inner"
                 style={{ backgroundColor: color }}
@@ -922,6 +1131,7 @@ function PaletteSectionMobile({
                 </span>
               </div>
             </button>
+            </Tooltip>
           ))}
         </div>
       )}

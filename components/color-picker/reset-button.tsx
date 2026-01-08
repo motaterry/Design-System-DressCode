@@ -5,6 +5,7 @@ import { useColorTheme } from "./color-context"
 import { useToast } from "@/components/ui/toast"
 import { RotateCcw } from "lucide-react"
 import { useState } from "react"
+import { Tooltip } from "@/components/ui/tooltip"
 
 export function ResetButton() {
   const { resetColors } = useColorTheme()
@@ -24,17 +25,19 @@ export function ResetButton() {
   }
 
   return (
-    <Button
-      onClick={handleReset}
-      variant="outline"
-      size="sm"
-      className="w-full"
-      aria-label="Reset colors to default"
-      disabled={isResetting}
-    >
-      <RotateCcw className={`w-4 h-4 ${isResetting ? "animate-spin" : ""}`} />
-      Reset Colors
-    </Button>
+    <Tooltip content="Restore default primary and complementary colors">
+      <Button
+        onClick={handleReset}
+        variant="outline"
+        size="sm"
+        className="w-full"
+        aria-label="Reset colors to default"
+        disabled={isResetting}
+      >
+        <RotateCcw className={`w-4 h-4 ${isResetting ? "animate-spin" : ""}`} />
+        Reset Colors
+      </Button>
+    </Tooltip>
   )
 }
 
