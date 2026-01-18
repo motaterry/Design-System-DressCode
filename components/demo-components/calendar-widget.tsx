@@ -5,8 +5,9 @@ import { useTheme } from "@/components/theme-context"
 import { useDesignSystem } from "@/components/design-system-context"
 import { useColorTheme } from "@/components/color-picker/color-context"
 import { hslToHex, getAccessibleTextColor } from "@/lib/color-utils"
+import { isMonochromatic } from "@/lib/effect-presets"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 const MONTHS = [
@@ -26,16 +27,25 @@ const MONTHS = [
 
 export function CalendarWidget() {
   const { mode } = useTheme()
-  const { buttonTextColor } = useDesignSystem()
+  const { buttonTextColor, effectPreset } = useDesignSystem()
   const { theme } = useColorTheme()
   const isDark = mode === "dark"
   const [currentDate, setCurrentDate] = useState(new Date(2025, 8, 1)) // September 2025
   
-  // Calculate the effective text color (handles "auto" mode)
-  const primaryHex = hslToHex(theme.primary.h, theme.primary.s, theme.primary.l)
-  const effectiveTextColor = buttonTextColor === "auto" 
-    ? getAccessibleTextColor(primaryHex) 
-    : buttonTextColor
+  // Calculate the effective text color (handles "auto" mode and monochromatic)
+  // Use useMemo to ensure recalculation when effectPreset or mode changes
+  const effectiveTextColor = useMemo(() => {
+    if (isMonochromatic(effectPreset)) {
+      // In monochromatic mode, use opposite colors for contrast
+      // Dark mode = white bg → dark text, Light mode = black bg → light text
+      return isDark ? "dark" : "light"
+    }
+    
+    const primaryHex = hslToHex(theme.primary.h, theme.primary.s, theme.primary.l)
+    return buttonTextColor === "auto" 
+      ? getAccessibleTextColor(primaryHex) 
+      : buttonTextColor
+  }, [effectPreset, isDark, buttonTextColor, theme.primary.h, theme.primary.s, theme.primary.l])
   const month = currentDate.getMonth()
   const year = currentDate.getFullYear()
 
@@ -126,7 +136,10 @@ export function CalendarWidget() {
                       : "text-gray-900 hover:bg-gray-200 cursor-pointer"
                     : "text-transparent cursor-default"
               }`}
-              style={day === selectedDay ? { color: effectiveTextColor === "dark" ? "#111827" : "#ffffff" } : undefined}
+              style={day === selectedDay ? { 
+                color: effectiveTextColor === "dark" ? "#111827" : "#ffffff",
+                backgroundColor: "var(--color-primary)"
+              } : undefined}
               aria-label={day ? `Day ${day}` : undefined}
               aria-pressed={day === selectedDay}
               disabled={!day}

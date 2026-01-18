@@ -6,7 +6,7 @@ import { ColorWheel } from "./color-wheel"
 import { useColorTheme } from "./color-context"
 import { useTheme } from "@/components/theme-context"
 import { useDesignSystem } from "@/components/design-system-context"
-import { EFFECT_PRESETS, type EffectPreset } from "@/lib/effect-presets"
+import { EFFECT_PRESETS, type EffectPreset, isMonochromatic } from "@/lib/effect-presets"
 import { hslToHex, formatHsl, getContrastRatio, getAccessibleTextColor, normalizeHex } from "@/lib/color-utils"
 import { ChevronDown, Moon, Type, SquareIcon, Download, Box, Undo2, Redo2, Palette, Settings, Layers, ChevronLeft, ChevronRight, PanelLeftClose, PanelRightOpen, ShieldCheck, CornerUpLeft } from "lucide-react"
 import { useToast } from "@/components/ui/toast"
@@ -900,7 +900,9 @@ export function ColorSidebar() {
                         setCustomHexInput(e.target.value)
                       }}
                       style={{
-                        backgroundColor: primaryHex,
+                        backgroundColor: isMonochromatic(effectPreset) 
+                          ? (mode === "dark" ? "#FFFFFF" : "#000000")
+                          : primaryHex,
                         borderRadius: `${borderRadius}px`,
                         padding: '0',
                         margin: '0',
@@ -908,6 +910,7 @@ export function ColorSidebar() {
                         height: '40px',
                         cursor: 'pointer',
                         flexShrink: 0,
+                        color: isMonochromatic(effectPreset) && mode === "light" ? "#FFFFFF" : undefined,
                       }}
                       className="cursor-pointer"
                       title="Pick primary color visually"
@@ -982,8 +985,11 @@ export function ColorSidebar() {
                         setCustomCompHexInput(e.target.value)
                       }}
                       style={{
-                        backgroundColor: compHex,
+                        backgroundColor: isMonochromatic(effectPreset) 
+                          ? (mode === "dark" ? "#FFFFFF" : "#000000")
+                          : compHex,
                         borderRadius: `${borderRadius}px`,
+                        color: isMonochromatic(effectPreset) && mode === "light" ? "#FFFFFF" : undefined,
                         padding: '0',
                         margin: '0',
                         width: '40px',

@@ -9,6 +9,7 @@ import { useIsMobile } from "@/lib/use-media-query"
 import { useDesignSystem } from "@/components/design-system-context"
 import { useColorTheme } from "@/components/color-picker/color-context"
 import { get3DEffects } from "@/lib/3d-effects"
+import { isMonochromatic } from "@/lib/effect-presets"
 
 const data = [
   { name: "Mon", value1: 40, value2: 30 },
@@ -173,6 +174,23 @@ const GradientBar = ({ x = 0, y = 0, width = 0, height = 0, chartId, isPrimary, 
     )
   }
   
+  // When monochromatic preset is enabled, use elegant textures
+  if (isMonochromatic(effectPreset)) {
+    // Use pattern ID from chart-level defs
+    const patternId = `${chartId}-${isPrimary ? 'primary-crosshatch' : 'complementary-dots'}`
+    
+    return (
+      <g className="gradient-bar">
+        {/* Bar with elegant texture pattern */}
+        <path
+          d={path}
+          fill={`url(#${patternId})`}
+          className="recharts-rectangle"
+        />
+      </g>
+    )
+  }
+  
   // When 3D is disabled, use flat color
   return (
     <path
@@ -185,6 +203,7 @@ const GradientBar = ({ x = 0, y = 0, width = 0, height = 0, chartId, isPrimary, 
 
 export function BarChartDemo() {
   const { mode } = useTheme()
+  const { effectPreset } = useDesignSystem()
   const isDark = mode === "dark"
   const isMobile = useIsMobile()
   const [activeFilter, setActiveFilter] = useState("7D")
@@ -332,6 +351,48 @@ export function BarChartDemo() {
         <div ref={chartRef} className="w-full flex-1 min-h-[180px] sm:min-h-[200px] lg:min-h-[220px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={chartMargins}>
+            <defs>
+              {/* Elegant texture patterns for monochromatic mode */}
+              {isMonochromatic(effectPreset) && (
+                <>
+                  {/* Primary: Crosshatch pattern (tight spacing) */}
+                  <pattern
+                    id={`${chartId}-primary-crosshatch`}
+                    x="0"
+                    y="0"
+                    width="6"
+                    height="6"
+                    patternUnits="userSpaceOnUse"
+                  >
+                    <rect width="6" height="6" fill={isDark ? "rgb(0, 0, 0)" : "hsl(var(--background))"} />
+                    <path
+                      d="M 0,0 L 6,6 M 6,0 L 0,6"
+                      stroke={isDark ? "rgba(255, 255, 255, 0.4)" : "rgba(0, 0, 0, 0.3)"}
+                      strokeWidth="0.6"
+                      strokeLinecap="round"
+                    />
+                  </pattern>
+                  
+                  {/* Complementary: Dots pattern (tight spacing) */}
+                  <pattern
+                    id={`${chartId}-complementary-dots`}
+                    x="0"
+                    y="0"
+                    width="8"
+                    height="8"
+                    patternUnits="userSpaceOnUse"
+                  >
+                    <rect width="8" height="8" fill={isDark ? "rgb(0, 0, 0)" : "hsl(var(--background))"} />
+                    <circle
+                      cx="4"
+                      cy="4"
+                      r="1.2"
+                      fill={isDark ? "rgba(255, 255, 255, 0.4)" : "rgba(0, 0, 0, 0.3)"}
+                    />
+                  </pattern>
+                </>
+              )}
+            </defs>
             <XAxis
               dataKey="name"
               tick={{ 

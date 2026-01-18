@@ -6,6 +6,8 @@ import { useTheme } from "@/components/theme-context"
 import { useDesignSystem } from "@/components/design-system-context"
 import { useColorTheme } from "@/components/color-picker/color-context"
 import { hslToHex, getAccessibleTextColor } from "@/lib/color-utils"
+import { isMonochromatic } from "@/lib/effect-presets"
+import { useMemo } from "react"
 import { 
   DropdownMenu, 
   DropdownTrigger, 
@@ -50,16 +52,27 @@ const notifications = [
  */
 export function NotificationsPanel() {
   const { mode } = useTheme()
-  const { buttonTextColor } = useDesignSystem()
+  const { buttonTextColor, effectPreset } = useDesignSystem()
   const { theme } = useColorTheme()
   const { addToast } = useToast()
   const isDark = mode === "dark"
   
-  // Calculate the effective text color (handles "auto" mode)
+  // Get primary hex color (used in multiple places)
   const primaryHex = hslToHex(theme.primary.h, theme.primary.s, theme.primary.l)
-  const effectiveTextColor = buttonTextColor === "auto" 
-    ? getAccessibleTextColor(primaryHex) 
-    : buttonTextColor
+  
+  // Calculate the effective text color (handles "auto" mode and monochromatic)
+  // Use useMemo to ensure recalculation when effectPreset or mode changes
+  const effectiveTextColor = useMemo(() => {
+    if (isMonochromatic(effectPreset)) {
+      // In monochromatic mode, use opposite colors for contrast
+      // Dark mode = white bg → dark text, Light mode = black bg → light text
+      return isDark ? "dark" : "light"
+    }
+    
+    return buttonTextColor === "auto" 
+      ? getAccessibleTextColor(primaryHex) 
+      : buttonTextColor
+  }, [effectPreset, isDark, buttonTextColor, primaryHex])
 
   const handleNotificationAction = (action: string, notifName: string) => {
     addToast({

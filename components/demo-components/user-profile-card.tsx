@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card"
 import { useTheme } from "@/components/theme-context"
 import { useColorTheme } from "@/components/color-picker/color-context"
 import { useDesignSystem } from "@/components/design-system-context"
+import { isMonochromatic } from "@/lib/effect-presets"
 import { 
   DropdownMenu, 
   DropdownTrigger, 
@@ -30,12 +31,12 @@ export function UserProfileCard() {
   const { effectPreset } = useDesignSystem()
   const { addToast } = useToast()
   const isDark = mode === "dark"
-  const isMonochromatic = effectPreset === "monochromatic"
+  const isMonochromaticPreset = isMonochromatic(effectPreset)
   
   // In monochromatic mode, use black (light mode) or white (dark mode)
   // Otherwise, use lighter tones (tints) for dark mode, darker tones (shades) for light mode
   // Index 2 = 30% mix, provides good contrast
-  const tagColor = isMonochromatic
+  const tagColor = isMonochromaticPreset
     ? (isDark ? "#ffffff" : "#000000")
     : (isDark ? theme.tints[2] : theme.shades[2])
 
@@ -132,7 +133,7 @@ export function UserProfileCard() {
         <span
           className="px-3 py-1.5 rounded-md text-xs font-medium border bg-transparent whitespace-nowrap"
           style={{ 
-            borderColor: isMonochromatic 
+            borderColor: isMonochromaticPreset 
               ? (isDark ? "rgba(255, 255, 255, 0.6)" : "rgba(0, 0, 0, 0.6)")
               : `${tagColor}99`, // 60% opacity
             color: tagColor 
@@ -144,7 +145,7 @@ export function UserProfileCard() {
         <span
           className="px-3 py-1.5 rounded-md text-xs font-medium border bg-transparent whitespace-nowrap"
           style={{ 
-            borderColor: isMonochromatic 
+            borderColor: isMonochromaticPreset 
               ? (isDark ? "rgba(255, 255, 255, 0.6)" : "rgba(0, 0, 0, 0.6)")
               : `${tagColor}99`, // 60% opacity
             color: tagColor 
@@ -156,7 +157,7 @@ export function UserProfileCard() {
         <span
           className="px-3 py-1.5 rounded-md text-xs font-medium border bg-transparent whitespace-nowrap"
           style={{ 
-            borderColor: isMonochromatic 
+            borderColor: isMonochromaticPreset 
               ? (isDark ? "rgba(255, 255, 255, 0.6)" : "rgba(0, 0, 0, 0.6)")
               : `${tagColor}99`, // 60% opacity
             color: tagColor 

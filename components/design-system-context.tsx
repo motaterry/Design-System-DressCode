@@ -1,7 +1,8 @@
 "use client"
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react"
-import { type EffectPreset } from "@/lib/effect-presets"
+import { type EffectPreset, isMonochromatic } from "@/lib/effect-presets"
+import { useTheme } from "@/components/theme-context"
 
 export type ButtonTextColor = "dark" | "light" | "auto"
 
@@ -19,6 +20,7 @@ interface DesignSystemContextType {
 const DesignSystemContext = createContext<DesignSystemContextType | undefined>(undefined)
 
 export function DesignSystemProvider({ children }: { children: React.ReactNode }) {
+  const { mode } = useTheme()
   // Always start with default values to match server render - default to "auto" for accessibility
   const [buttonTextColor, setButtonTextColorState] = useState<ButtonTextColor>("auto")
   const [borderRadius, setBorderRadiusState] = useState<number>(8)
@@ -50,10 +52,10 @@ export function DesignSystemProvider({ children }: { children: React.ReactNode }
 
       // Load effect preset (new system)
       const savedEffectPreset = localStorage.getItem("effectPreset") as EffectPreset
-      if (savedEffectPreset && (savedEffectPreset === "3d" || savedEffectPreset === "glassmorphism" || savedEffectPreset === "flat")) {
+      if (savedEffectPreset && (savedEffectPreset === "3d" || savedEffectPreset === "glassmorphism" || savedEffectPreset === "flat" || savedEffectPreset === "monochromatic")) {
         setEffectPresetState(savedEffectPreset)
         // Sync enable3D for backward compatibility
-        setEnable3DState(savedEffectPreset !== "flat")
+        setEnable3DState(savedEffectPreset !== "flat" && savedEffectPreset !== "monochromatic")
       } else {
         // Fallback: try to load old enable3D setting and migrate
         const savedEnable3D = localStorage.getItem("enable3D")
@@ -102,6 +104,33 @@ export function DesignSystemProvider({ children }: { children: React.ReactNode }
       // localStorage may be unavailable
     }
   }, [effectPreset])
+
+  // Override primary/complementary colors for monochromatic preset
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    
+    const root = document.documentElement
+    const isDark = mode === "dark"
+    
+    if (isMonochromatic(effectPreset)) {
+      // Override primary and complementary colors: white in dark mode, black in light mode
+      const monochromeColor = isDark ? "rgb(255, 255, 255)" : "rgb(0, 0, 0)"
+      root.style.setProperty("--color-primary", monochromeColor)
+      root.style.setProperty("--color-complementary", monochromeColor)
+      root.style.setProperty("--color-primary-chart", monochromeColor)
+      root.style.setProperty("--color-complementary-chart", monochromeColor)
+      root.style.setProperty("--color-primary-hover", monochromeColor)
+      root.style.setProperty("--color-complementary-hover", monochromeColor)
+    } else {
+      // Clear overrides - ColorProvider will restore original colors
+      root.style.removeProperty("--color-primary")
+      root.style.removeProperty("--color-complementary")
+      root.style.removeProperty("--color-primary-chart")
+      root.style.removeProperty("--color-complementary-chart")
+      root.style.removeProperty("--color-primary-hover")
+      root.style.removeProperty("--color-complementary-hover")
+    }
+  }, [effectPreset, mode])
 
   const setButtonTextColor = useCallback((color: ButtonTextColor) => {
     setButtonTextColorState(color)

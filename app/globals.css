@@ -263,6 +263,16 @@ input[type="color"] {
   appearance: none;
 }
 
+/* Force white text/icon when background is black (monochromatic dark mode) */
+input[type="color"][style*="background-color: rgb(0, 0, 0)"],
+input[type="color"][style*="background-color:#000000"],
+input[type="color"][style*="background-color: #000000"],
+input[type="color"][style*="background-color:#000"],
+input[type="color"][style*="background-color: #000"] {
+  color: white !important;
+  filter: brightness(0) invert(1);
+}
+
 input[type="color"]:focus,
 input[type="color"]:focus-visible,
 input[type="color"]:active {
@@ -285,6 +295,15 @@ input[type="color"]::-webkit-color-swatch {
   border-radius: 0 !important;
   outline: none !important;
   box-shadow: none !important;
+}
+
+/* Force white text/icon in swatch when background is black */
+input[type="color"][style*="background-color: rgb(0, 0, 0)"]::-webkit-color-swatch,
+input[type="color"][style*="background-color:#000000"]::-webkit-color-swatch,
+input[type="color"][style*="background-color: #000000"]::-webkit-color-swatch,
+input[type="color"][style*="background-color:#000"]::-webkit-color-swatch,
+input[type="color"][style*="background-color: #000"]::-webkit-color-swatch {
+  color: white !important;
 }
 
 /* Remove borders from Firefox color swatch */

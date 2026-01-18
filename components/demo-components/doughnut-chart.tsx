@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { useTheme } from "@/components/theme-context"
 import { useColorTheme } from "@/components/color-picker/color-context"
 import { useDesignSystem } from "@/components/design-system-context"
+import { isMonochromatic } from "@/lib/effect-presets"
 import { hslToHex } from "@/lib/color-utils"
 import { PieChart, Pie, Cell, ResponsiveContainer, Sector, Tooltip } from "recharts"
 
@@ -23,7 +24,7 @@ const GaugeGradientDefs = ({
 }: { 
   id: string; 
   isDark: boolean;
-  effectPreset: "3d" | "glassmorphism" | "flat";
+  effectPreset: "3d" | "glassmorphism" | "flat" | "monochromatic";
   primaryHSL: { h: number; s: number; l: number };
 }) => (
   <defs>
@@ -56,6 +57,26 @@ const GaugeGradientDefs = ({
           <feMergeNode in="SourceGraphic" />
         </feMerge>
       </filter>
+    )}
+    
+    {/* Elegant texture pattern for monochromatic mode (tight spacing) */}
+    {isMonochromatic(effectPreset) && (
+      <pattern
+        id={`${id}-texture`}
+        x="0"
+        y="0"
+        width="6"
+        height="6"
+        patternUnits="userSpaceOnUse"
+      >
+        <rect width="6" height="6" fill={isDark ? "rgb(0, 0, 0)" : "hsl(var(--background))"} />
+        <path
+          d="M 0,0 L 6,6 M 6,0 L 0,6"
+          stroke={isDark ? "rgba(255, 255, 255, 0.4)" : "rgba(0, 0, 0, 0.3)"}
+          strokeWidth="0.6"
+          strokeLinecap="round"
+        />
+      </pattern>
     )}
   </defs>
 )
@@ -149,9 +170,11 @@ export function DoughnutChartDemo() {
   const rawGradientId = useId()
   const gradientId = rawGradientId.replace(/:/g, '') // Sanitize for SVG ID
   
-  // Get primary color directly from color context (more reliable than CSS variables for SVG)
+  // Get primary color - use monochrome color in monochromatic mode
   // Ensure we always have a valid hex color
-  const primaryColor = hslToHex(theme.primary.h, theme.primary.s, theme.primary.l) || "#6BCF7F"
+  const primaryColor = isMonochromatic(effectPreset) 
+    ? (isDark ? "#FFFFFF" : "#000000")
+    : (hslToHex(theme.primary.h, theme.primary.s, theme.primary.l) || "#6BCF7F")
   
   // Get responsive dimensions
   const { size: chartSize, innerRadius, outerRadius } = useChartDimensions(chartContainerRef)
@@ -353,6 +376,31 @@ export function DoughnutChartDemo() {
                     style={{ pointerEvents: "none" }}
                   />
                 </Pie>
+                {/* Elegant texture overlay for monochromatic mode */}
+                {isMonochromatic(effectPreset) && (
+                  <Pie
+                    data={foregroundData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={innerRadius}
+                    outerRadius={outerRadius}
+                    startAngle={90}
+                    endAngle={90 - (272 / 320) * 360}
+                    dataKey="value"
+                    stroke="none"
+                    strokeWidth={0}
+                    cornerRadius={0}
+                    isAnimationActive={false}
+                  >
+                    <Cell 
+                      fill={`url(#${gradientId}-texture)`}
+                      stroke="none"
+                      style={{ 
+                        pointerEvents: "none"
+                      }}
+                    />
+                  </Pie>
+                )}
               </PieChart>
             </ResponsiveContainer>
             {/* 

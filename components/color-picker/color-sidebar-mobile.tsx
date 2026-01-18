@@ -5,7 +5,7 @@ import { ColorWheel } from "./color-wheel"
 import { useColorTheme } from "./color-context"
 import { useTheme } from "@/components/theme-context"
 import { useDesignSystem } from "@/components/design-system-context"
-import { EFFECT_PRESETS, type EffectPreset } from "@/lib/effect-presets"
+import { EFFECT_PRESETS, type EffectPreset, isMonochromatic } from "@/lib/effect-presets"
 import {
   hslToHex,
   formatHsl,
@@ -363,7 +363,8 @@ function TabBar({
 function ColorsTab({ isDark }: { isDark: boolean }) {
   const { theme, updatePrimaryFromHex, updateComplementaryFromHex } = useColorTheme()
   const { addToast } = useToast()
-  const { borderRadius } = useDesignSystem()
+  const { borderRadius, effectPreset } = useDesignSystem()
+  const { mode } = useTheme()
 
   const primaryHex = hslToHex(theme.primary.h, theme.primary.s, theme.primary.l)
   const compHex = hslToHex(
@@ -540,8 +541,11 @@ function ColorsTab({ isDark }: { isDark: boolean }) {
               }}
               className="w-12 h-12 cursor-pointer border-0"
               style={{ 
-                backgroundColor: primaryHex,
+                backgroundColor: isMonochromatic(effectPreset) 
+                  ? (mode === "dark" ? "#FFFFFF" : "#000000")
+                  : primaryHex,
                 borderRadius: `${borderRadius}px`,
+                color: isMonochromatic(effectPreset) && mode === "light" ? "#FFFFFF" : undefined,
               }}
             />
           </Tooltip>
@@ -585,8 +589,11 @@ function ColorsTab({ isDark }: { isDark: boolean }) {
               }}
               className="w-12 h-12 cursor-pointer border-0"
               style={{ 
-                backgroundColor: compHex,
+                backgroundColor: isMonochromatic(effectPreset) 
+                  ? (mode === "dark" ? "#FFFFFF" : "#000000")
+                  : compHex,
                 borderRadius: `${borderRadius}px`,
+                color: isMonochromatic(effectPreset) && mode === "light" ? "#FFFFFF" : undefined,
               }}
             />
           </Tooltip>

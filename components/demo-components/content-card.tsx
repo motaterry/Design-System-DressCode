@@ -7,16 +7,13 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { useTheme } from "@/components/theme-context"
 import { useDesignSystem } from "@/components/design-system-context"
-// Helper function to check if preset is monochromatic
-function isMonochromaticPreset(preset: string): boolean {
-  return preset === "monochromatic"
-}
+import { isMonochromatic } from "@/lib/effect-presets"
 
 export function ContentCard() {
   const { mode } = useTheme()
   const { effectPreset } = useDesignSystem()
   const isDark = mode === "dark"
-  const isMonochromatic = isMonochromaticPreset(effectPreset)
+  const isMonochromaticPreset = isMonochromatic(effectPreset)
   
   return (
     <Card className="overflow-hidden h-full flex flex-col">
@@ -30,7 +27,7 @@ export function ContentCard() {
         <div className="absolute top-3 right-3">
           <span 
             className={`px-2 py-1 rounded text-xs font-semibold ${
-              isMonochromatic 
+              isMonochromaticPreset 
                 ? (isDark ? "bg-white text-black" : "bg-black text-white")
                 : "bg-green-500 text-white"
             }`}

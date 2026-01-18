@@ -13,6 +13,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { useIsMobile } from "@/lib/use-media-query"
+import { useDesignSystem } from "@/components/design-system-context"
+import { isMonochromatic } from "@/lib/effect-presets"
 
 const data = [
   { name: "Mon", value1: 40, value2: 20 },
@@ -26,6 +28,7 @@ const data = [
 
 export function AreaChartDemo() {
   const { mode } = useTheme()
+  const { effectPreset } = useDesignSystem()
   const isDark = mode === "dark"
   const isMobile = useIsMobile()
   const [activeFilter, setActiveFilter] = useState("7D")
@@ -93,6 +96,47 @@ export function AreaChartDemo() {
                   stopOpacity={0}
                 />
               </linearGradient>
+              
+              {/* Elegant texture patterns for monochromatic mode */}
+              {isMonochromatic(effectPreset) && (
+                <>
+                  {/* Primary: Crosshatch pattern (tight spacing) */}
+                  <pattern
+                    id="texturePrimary"
+                    x="0"
+                    y="0"
+                    width="6"
+                    height="6"
+                    patternUnits="userSpaceOnUse"
+                  >
+                    <rect width="6" height="6" fill={isDark ? "rgb(0, 0, 0)" : "hsl(var(--background))"} />
+                    <path
+                      d="M 0,0 L 6,6 M 6,0 L 0,6"
+                      stroke={isDark ? "rgba(255, 255, 255, 0.4)" : "rgba(0, 0, 0, 0.3)"}
+                      strokeWidth="0.6"
+                      strokeLinecap="round"
+                    />
+                  </pattern>
+                  
+                  {/* Complementary: Dots pattern (tight spacing) */}
+                  <pattern
+                    id="textureComplementary"
+                    x="0"
+                    y="0"
+                    width="8"
+                    height="8"
+                    patternUnits="userSpaceOnUse"
+                  >
+                    <rect width="8" height="8" fill={isDark ? "rgb(0, 0, 0)" : "hsl(var(--background))"} />
+                    <circle
+                      cx="4"
+                      cy="4"
+                      r="1.2"
+                      fill={isDark ? "rgba(255, 255, 255, 0.4)" : "rgba(0, 0, 0, 0.3)"}
+                    />
+                  </pattern>
+                </>
+              )}
             </defs>
             <XAxis
               dataKey="name"
@@ -164,14 +208,14 @@ export function AreaChartDemo() {
               dataKey="value1"
               stackId="1"
               stroke="var(--color-primary)"
-              fill="url(#colorPrimary)"
+              fill={isMonochromatic(effectPreset) ? "url(#texturePrimary)" : "url(#colorPrimary)"}
             />
             <Area
               type="monotone"
               dataKey="value2"
               stackId="1"
               stroke="var(--color-complementary)"
-              fill="url(#colorComplementary)"
+              fill={isMonochromatic(effectPreset) ? "url(#textureComplementary)" : "url(#colorComplementary)"}
             />
           </AreaChart>
         </ResponsiveContainer>

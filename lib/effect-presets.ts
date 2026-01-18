@@ -6,7 +6,15 @@
  * other effects should be calculated.
  */
 
-export type EffectPreset = "3d" | "glassmorphism" | "flat"
+export type EffectPreset = "3d" | "glassmorphism" | "flat" | "monochromatic"
+
+/**
+ * Helper function to check if preset is monochromatic
+ * This avoids TypeScript strict mode comparison issues
+ */
+export function isMonochromatic(preset: string): boolean {
+  return preset === "monochromatic"
+}
 
 export interface EffectPresetConfig {
   id: EffectPreset
@@ -41,6 +49,15 @@ export const EFFECT_PRESETS: Record<EffectPreset, EffectPresetConfig> = {
     id: "flat",
     name: "Flat",
     description: "No effects, solid colors",
+    gradient: false,
+    shadow: "none",
+    blur: false,
+    intensity: 0,
+  },
+  monochromatic: {
+    id: "monochromatic",
+    name: "Monochromatic",
+    description: "Dark lines, no shadows, no shades",
     gradient: false,
     shadow: "none",
     blur: false,
@@ -83,6 +100,9 @@ export function getEffectStyles(
     case "flat":
       return getFlatStyles(color)
     
+    case "monochromatic":
+      return getMonochromaticStyles(color, isDark)
+    
     default:
       return getFlatStyles(color)
   }
@@ -108,6 +128,9 @@ export function getNeutralEffectStyles(
     
     case "flat":
       return getNeutralFlatStyles(isDark)
+    
+    case "monochromatic":
+      return getNeutralMonochromaticStyles(isDark)
     
     default:
       return getNeutralFlatStyles(isDark)
@@ -284,5 +307,46 @@ function getNeutralFlatStyles(isDark: boolean): EffectStyles {
     background,
     boxShadow: "none",
     boxShadowHover: "none",
+  }
+}
+
+/**
+ * Monochromatic Effect Styles (colored)
+ */
+function getMonochromaticStyles(
+  color: { h: number; s: number; l: number },
+  isDark: boolean
+): EffectStyles {
+  // Dark border color for borders
+  const borderColor = isDark ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.2)"
+  
+  // Buttons: white in dark mode, dark in light mode
+  const background = isDark ? "rgb(255, 255, 255)" : "rgb(0, 0, 0)"
+  const border = `1px solid ${borderColor}`
+
+  return {
+    background,
+    boxShadow: "none",
+    boxShadowHover: "none",
+    border,
+  }
+}
+
+/**
+ * Neutral Monochromatic Effect Styles (for cards, panels)
+ */
+function getNeutralMonochromaticStyles(isDark: boolean): EffectStyles {
+  // No background fill - only borders have color
+  const background = "transparent"
+
+  // Dark border (lines) - no shadows
+  const borderColor = isDark ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.2)"
+  const border = `1px solid ${borderColor}`
+
+  return {
+    background,
+    boxShadow: "none",
+    boxShadowHover: "none",
+    border,
   }
 }

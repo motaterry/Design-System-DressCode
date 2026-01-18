@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { useTheme } from "@/components/theme-context"
 import { useDesignSystem } from "@/components/design-system-context"
+import { isMonochromatic } from "@/lib/effect-presets"
 import Image from "next/image"
 import { Settings, User, Bell, Shield } from "lucide-react"
 
@@ -25,7 +26,7 @@ export function RadixThemesComponent() {
   const { mode } = useTheme()
   const { buttonTextColor, effectPreset } = useDesignSystem()
   const isDark = mode === "dark"
-  const isMonochromatic = effectPreset === "monochromatic"
+  const isMonochromaticPreset = isMonochromatic(effectPreset)
   const [settings, setSettings] = useState({
     notifications: true,
     darkMode: false,

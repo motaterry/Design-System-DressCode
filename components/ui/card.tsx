@@ -100,15 +100,16 @@ const Card = React.forwardRef<
       )}
       style={{
         borderRadius: "var(--border-radius)",
-        // Apply effect background
-        ...(shouldApplyEffects ? { background: background } : {}),
+        // Merge props.style first (lower priority)
+        ...props.style,
+        // Apply effect background (override any background from props.style)
+        ...(shouldApplyEffects && background ? { background: background } : {}),
         // Apply combined shadow (external + inset border for 3D, or just external for others)
         ...(shouldApplyEffects ? { boxShadow: combinedShadow } : {}),
         // Apply backdrop filter for glassmorphism
         ...(shouldApplyEffects && backdropFilter ? { backdropFilter: backdropFilter } : {}),
-        // Apply border from preset (for glassmorphism)
+        // Apply border from preset (for glassmorphism and monochromatic)
         ...(shouldApplyEffects && border ? { border: border } : {}),
-        ...props.style, // Merge with any existing styles
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}

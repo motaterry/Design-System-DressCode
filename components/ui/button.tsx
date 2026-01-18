@@ -9,6 +9,7 @@ import { useTheme } from "@/components/theme-context"
 import { useDesignSystem } from "@/components/design-system-context"
 import { useColorTheme } from "@/components/color-picker/color-context"
 import { useEffectPresets } from "@/lib/use-effect-presets"
+import { isMonochromatic } from "@/lib/effect-presets"
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed relative [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&>*]:relative [&>*]:z-10",
@@ -67,11 +68,16 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const primaryHex = hslToHex(theme.primary.h, theme.primary.s, theme.primary.l)
     
     // Calculate the effective text color (handles "auto" mode)
-    // For glassmorphism, always use fixed colors based on mode because of low opacity background
+    // For glassmorphism and monochromatic, always use fixed colors based on mode
     const getEffectiveTextColor = (): "dark" | "light" => {
       // Glassmorphism needs fixed text colors because of low opacity background
       if (effectPreset === "glassmorphism") {
         return isDark ? "light" : "dark" // White in dark mode, black in light mode
+      }
+      
+      // Monochromatic: dark mode = white buttons with black text, light mode = dark buttons with white text
+      if (isMonochromatic(effectPreset)) {
+        return isDark ? "dark" : "light" // Black text in dark mode (white buttons), white text in light mode (dark buttons)
       }
       
       if (buttonTextColor === "auto") {

@@ -174,16 +174,39 @@ export function ScrollingCardGrid({
     scrollPositionRef.current = currentTransform
 
     const handleWheel = (e: WheelEvent) => {
-      // Check if the event is within our container bounds
+      // When paused, allow wheel scrolling - check if mouse is over container or content
+      let isOverContainer = false
+      
       if (container) {
         const rect = container.getBoundingClientRect()
         const x = e.clientX
         const y = e.clientY
         
-        // Only handle if mouse is over the container
-        if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
-          return
-        }
+        // More lenient bounds check - account for negative margins
+        // Check if mouse is within or near the container bounds
+        const padding = 50 // Allow some padding for better UX
+        isOverContainer = (
+          x >= rect.left - padding && 
+          x <= rect.right + padding && 
+          y >= rect.top - padding && 
+          y <= rect.bottom + padding
+        )
+      }
+      
+      // Also check if mouse is over content
+      const contentRect = content.getBoundingClientRect()
+      const x = e.clientX
+      const y = e.clientY
+      const isOverContent = (
+        x >= contentRect.left && 
+        x <= contentRect.right && 
+        y >= contentRect.top && 
+        y <= contentRect.bottom
+      )
+      
+      // Only handle if mouse is over container or content
+      if (!isOverContainer && !isOverContent) {
+        return
       }
       
       e.preventDefault()
@@ -350,6 +373,8 @@ export function ScrollingCardGrid({
       <div
         ref={contentRef}
         className="scrolling-card-content"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
       >
         {/* First set of cards - wrapped with gap */}
         <div className="scrolling-card-set">
