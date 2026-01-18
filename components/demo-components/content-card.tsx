@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { useTheme } from "@/components/theme-context"
 import { useDesignSystem } from "@/components/design-system-context"
-import { EFFECT_PRESETS } from "@/lib/effect-presets"
 
 export function ContentCard() {
   const { mode } = useTheme()
   const { effectPreset } = useDesignSystem()
   const isDark = mode === "dark"
-  const isMonochromatic = effectPreset === EFFECT_PRESETS.monochromatic.id
+  // Check if preset is monochromatic - same pattern used in design-system-context.tsx
+  const isMonochromatic = effectPreset === "monochromatic"
   
   return (
     <Card className="overflow-hidden h-full flex flex-col">
