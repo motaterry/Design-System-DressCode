@@ -7,10 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { useTheme } from "@/components/theme-context"
 import { useDesignSystem } from "@/components/design-system-context"
-import { type EffectPreset } from "@/lib/effect-presets"
-
 // Helper function to check if preset is monochromatic
-function isMonochromaticPreset(preset: EffectPreset): boolean {
+function isMonochromaticPreset(preset: string): boolean {
   return preset === "monochromatic"
 }
 
