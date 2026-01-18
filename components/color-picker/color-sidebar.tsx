@@ -1176,76 +1176,119 @@ export function ColorSidebar() {
                     onToggle={() => toggleSection("buttonText")}
                     isDark={isDark}
                   >
-                    <Tooltip content={`Set button text color to ${buttonTextColor === "auto" ? "auto (automatic contrast)" : buttonTextColor === "dark" ? "black" : "white"}`} side="top">
-                      <div className="flex items-stretch w-full">
-                        <button
-                          onClick={() => setButtonTextColor("auto")}
-                          className={`flex-1 h-12 flex items-center justify-center rounded-l-lg transition-all duration-200 ease-out cursor-pointer ${
-                            buttonTextColor === "auto"
-                              ? isDark 
-                                ? "bg-white/10 border border-r-0 border-white/50" 
-                                : "bg-gray-200 border border-r-0 border-gray-300"
-                              : isDark
-                                ? "bg-transparent border border-r-0 border-white/50"
-                                : "bg-transparent border border-r-0 border-gray-300"
-                          }`}
-                          aria-pressed={buttonTextColor === "auto"}
-                          aria-label="Auto contrast text color"
-                        >
-                          <span className={`text-lg font-bold ${
-                            buttonTextColor === "auto" 
-                              ? isDark ? 'text-white' : 'text-gray-900'
-                              : isDark ? 'text-white/40' : 'text-gray-400'
-                          }`}>
-                            Auto
+                    {(() => {
+                      const isButtonTextColorDisabled = effectPreset === "monochromatic" || effectPreset === "glassmorphism"
+                      const tooltipContent = isButtonTextColorDisabled
+                        ? `Button text color is fixed for ${effectPreset === "monochromatic" ? "monochromatic" : "glassmorphism"} preset`
+                        : `Set button text color to ${buttonTextColor === "auto" ? "auto (automatic contrast)" : buttonTextColor === "dark" ? "black" : "white"}`
+                      
+                      return (
+                        <Tooltip content={tooltipContent} side="top">
+                          <div className="flex items-stretch w-full">
+                            <button
+                              onClick={() => !isButtonTextColorDisabled && setButtonTextColor("auto")}
+                              disabled={isButtonTextColorDisabled}
+                              className={`flex-1 h-12 flex items-center justify-center rounded-l-lg transition-all duration-200 ease-out ${
+                                isButtonTextColorDisabled
+                                  ? "cursor-not-allowed opacity-50"
+                                  : "cursor-pointer"
+                              } ${
+                                buttonTextColor === "auto"
+                                  ? isDark 
+                                    ? "bg-white/10 border border-r-0 border-white/50" 
+                                    : "bg-gray-200 border border-r-0 border-gray-300"
+                                  : isDark
+                                    ? "bg-transparent border border-r-0 border-white/50"
+                                    : "bg-transparent border border-r-0 border-gray-300"
+                              }`}
+                              aria-pressed={buttonTextColor === "auto"}
+                              aria-disabled={isButtonTextColorDisabled}
+                              aria-label="Auto contrast text color"
+                            >
+                              <span className={`text-lg font-bold ${
+                                buttonTextColor === "auto" 
+                                  ? isDark ? 'text-white' : 'text-gray-900'
+                                  : isDark ? 'text-white/40' : 'text-gray-400'
+                              }`}>
+                                Auto
+                              </span>
+                            </button>
+                            <button
+                              onClick={() => !isButtonTextColorDisabled && setButtonTextColor("dark")}
+                              disabled={isButtonTextColorDisabled}
+                              className={`flex-1 h-12 flex items-center justify-center transition-all duration-200 ease-out ${
+                                isButtonTextColorDisabled
+                                  ? "cursor-not-allowed opacity-50"
+                                  : "cursor-pointer"
+                              } ${
+                                buttonTextColor === "dark"
+                                  ? isDark 
+                                    ? "bg-white/10 border border-r-0 border-white/50" 
+                                    : "bg-gray-200 border border-r-0 border-gray-300"
+                                  : isDark
+                                    ? "bg-transparent border border-r-0 border-white/50"
+                                    : "bg-transparent border border-r-0 border-gray-300"
+                              }`}
+                              aria-pressed={buttonTextColor === "dark"}
+                              aria-disabled={isButtonTextColorDisabled}
+                              aria-label="Black Text"
+                            >
+                              <span className={`text-lg font-bold ${
+                                buttonTextColor === "dark" 
+                                  ? isDark ? 'text-white' : 'text-gray-900'
+                                  : isDark ? 'text-white/40' : 'text-gray-400'
+                              }`}>
+                                Black
+                              </span>
+                            </button>
+                            <button
+                              onClick={() => !isButtonTextColorDisabled && setButtonTextColor("light")}
+                              disabled={isButtonTextColorDisabled}
+                              className={`flex-1 h-12 flex items-center justify-center rounded-r-lg transition-all duration-200 ease-out ${
+                                isButtonTextColorDisabled
+                                  ? "cursor-not-allowed opacity-50"
+                                  : "cursor-pointer"
+                              } ${
+                                buttonTextColor === "light"
+                                  ? isDark
+                                    ? "bg-white/10 border border-white/50"
+                                    : "bg-gray-200 border border-gray-300"
+                                  : isDark
+                                    ? "bg-transparent border border-white/50"
+                                    : "bg-transparent border border-gray-300"
+                              }`}
+                              aria-pressed={buttonTextColor === "light"}
+                              aria-disabled={isButtonTextColorDisabled}
+                              aria-label="White Text"
+                            >
+                              <span className={`text-lg font-bold ${
+                                buttonTextColor === "light"
+                                  ? isDark ? 'text-white' : 'text-gray-900'
+                                  : isDark ? 'text-white/40' : 'text-gray-400'
+                              }`}>
+                                White
+                              </span>
+                            </button>
+                          </div>
+                        </Tooltip>
+                      )
+                    })()}
+                    
+                    {/* Info message when disabled */}
+                    {(() => {
+                      const isButtonTextColorDisabled = effectPreset === "monochromatic" || effectPreset === "glassmorphism"
+                      if (!isButtonTextColorDisabled) return null
+                      
+                      return (
+                        <div className={`text-xs px-3 py-2.5 rounded-lg mt-1 ${
+                          isDark ? 'bg-white/5 text-[#bbb]' : 'bg-gray-100 text-gray-600'
+                        }`}>
+                          <span>
+                            Button text color is automatically set for {effectPreset === "monochromatic" ? "monochromatic" : "glassmorphism"} preset
                           </span>
-                        </button>
-                        <button
-                          onClick={() => setButtonTextColor("dark")}
-                          className={`flex-1 h-12 flex items-center justify-center transition-all duration-200 ease-out cursor-pointer ${
-                            buttonTextColor === "dark"
-                              ? isDark 
-                                ? "bg-white/10 border border-r-0 border-white/50" 
-                                : "bg-gray-200 border border-r-0 border-gray-300"
-                              : isDark
-                                ? "bg-transparent border border-r-0 border-white/50"
-                                : "bg-transparent border border-r-0 border-gray-300"
-                          }`}
-                          aria-pressed={buttonTextColor === "dark"}
-                          aria-label="Black Text"
-                        >
-                          <span className={`text-lg font-bold ${
-                            buttonTextColor === "dark" 
-                              ? isDark ? 'text-white' : 'text-gray-900'
-                              : isDark ? 'text-white/40' : 'text-gray-400'
-                          }`}>
-                            Black
-                          </span>
-                        </button>
-                        <button
-                          onClick={() => setButtonTextColor("light")}
-                          className={`flex-1 h-12 flex items-center justify-center rounded-r-lg transition-all duration-200 ease-out cursor-pointer ${
-                            buttonTextColor === "light"
-                              ? isDark
-                                ? "bg-white/10 border border-white/50"
-                                : "bg-gray-200 border border-gray-300"
-                              : isDark
-                                ? "bg-transparent border border-white/50"
-                                : "bg-transparent border border-gray-300"
-                          }`}
-                          aria-pressed={buttonTextColor === "light"}
-                          aria-label="White Text"
-                        >
-                          <span className={`text-lg font-bold ${
-                            buttonTextColor === "light"
-                              ? isDark ? 'text-white' : 'text-gray-900'
-                              : isDark ? 'text-white/40' : 'text-gray-400'
-                          }`}>
-                            White
-                          </span>
-                        </button>
-                      </div>
-                    </Tooltip>
+                        </div>
+                      )
+                    })()}
                     
                     {/* Contrast info display when Auto is selected */}
                     {buttonTextColor === "auto" && (

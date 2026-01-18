@@ -692,18 +692,45 @@ function SettingsTab({ isDark }: { isDark: boolean }) {
         >
           Button Text Color
         </span>
-        <Tooltip content={`Set button text color to ${buttonTextColor === "auto" ? "auto (automatic contrast)" : buttonTextColor === "dark" ? "black" : "white"}`} side="top">
-          <SegmentedControl
-            options={[
-              { id: "auto", label: "Auto" },
-              { id: "dark", label: "Black" },
-              { id: "light", label: "White" },
-            ]}
-            value={buttonTextColor}
-            onChange={(v) => setButtonTextColor(v as "auto" | "dark" | "light")}
-            isDark={isDark}
-          />
-        </Tooltip>
+        {(() => {
+          const isButtonTextColorDisabled = effectPreset === "monochromatic" || effectPreset === "glassmorphism"
+          const tooltipContent = isButtonTextColorDisabled
+            ? `Button text color is fixed for ${effectPreset === "monochromatic" ? "monochromatic" : "glassmorphism"} preset`
+            : `Set button text color to ${buttonTextColor === "auto" ? "auto (automatic contrast)" : buttonTextColor === "dark" ? "black" : "white"}`
+          
+          return (
+            <Tooltip content={tooltipContent} side="top">
+              <SegmentedControl
+                options={[
+                  { id: "auto", label: "Auto" },
+                  { id: "dark", label: "Black" },
+                  { id: "light", label: "White" },
+                ]}
+                value={buttonTextColor}
+                onChange={(v) => !isButtonTextColorDisabled && setButtonTextColor(v as "auto" | "dark" | "light")}
+                isDark={isDark}
+                disabled={isButtonTextColorDisabled}
+              />
+            </Tooltip>
+          )
+        })()}
+        {(() => {
+          const isButtonTextColorDisabled = effectPreset === "monochromatic" || effectPreset === "glassmorphism"
+          if (!isButtonTextColorDisabled) return null
+          
+          return (
+            <div
+              className={cn(
+                "text-xs px-3 py-2.5 rounded-lg mt-1",
+                isDark ? "bg-white/5 text-[#bbb]" : "bg-gray-100 text-gray-600"
+              )}
+            >
+              <span>
+                Button text color is automatically set for {effectPreset === "monochromatic" ? "monochromatic" : "glassmorphism"} preset
+              </span>
+            </div>
+          )
+        })()}
         {buttonTextColor === "auto" && (
           <div
             className={cn(
@@ -942,11 +969,13 @@ function SegmentedControl({
   value,
   onChange,
   isDark,
+  disabled = false,
 }: {
   options: { id: string; label: string }[]
   value: string
   onChange: (value: string) => void
   isDark: boolean
+  disabled?: boolean
 }) {
   return (
     <div className="flex items-stretch w-full">
@@ -958,10 +987,12 @@ function SegmentedControl({
         return (
           <button
             key={option.id}
-            onClick={() => onChange(option.id)}
+            onClick={() => !disabled && onChange(option.id)}
+            disabled={disabled}
             className={cn(
-              "flex-1 h-12 flex items-center justify-center transition-all duration-200 ease-out cursor-pointer",
+              "flex-1 h-12 flex items-center justify-center transition-all duration-200 ease-out",
               "min-h-[48px]", // Touch target
+              disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
               isFirst && "rounded-l-lg",
               isLast && "rounded-r-lg",
               !isLast && "border-r-0",
@@ -974,6 +1005,7 @@ function SegmentedControl({
                 : "bg-transparent border border-gray-300"
             )}
             aria-pressed={isSelected}
+            aria-disabled={disabled}
           >
             <span
               className={cn(
