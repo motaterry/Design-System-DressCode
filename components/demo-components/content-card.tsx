@@ -10,9 +10,10 @@ import { useDesignSystem } from "@/components/design-system-context"
 import { type EffectPreset } from "@/lib/effect-presets"
 
 // Helper function to check if preset is monochromatic
-// Using explicit type narrowing to help TypeScript
-function isMonochromaticPreset(preset: EffectPreset): preset is "monochromatic" {
-  return preset === ("monochromatic" as EffectPreset)
+// Using a const assertion to ensure type compatibility
+const MONOCHROMATIC: EffectPreset = "monochromatic"
+function isMonochromaticPreset(preset: EffectPreset): boolean {
+  return preset === MONOCHROMATIC
 }
 
 export function ContentCard() {
