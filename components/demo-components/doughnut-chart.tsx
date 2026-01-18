@@ -18,12 +18,12 @@ const percentage = Math.round((272 / total) * 100)
 const GaugeGradientDefs = ({ 
   id, 
   isDark, 
-  enable3D,
+  effectPreset,
   primaryHSL 
 }: { 
   id: string; 
   isDark: boolean;
-  enable3D: boolean;
+  effectPreset: "3d" | "glassmorphism" | "flat";
   primaryHSL: { h: number; s: number; l: number };
 }) => (
   <defs>
@@ -48,7 +48,7 @@ const GaugeGradientDefs = ({
     </linearGradient>
     
     {/* Glow filter for 3D effect */}
-    {enable3D && (
+    {effectPreset === "3d" && (
       <filter id={`${id}-glow`} x="-100%" y="-100%" width="300%" height="300%">
         <feGaussianBlur stdDeviation="8" result="coloredBlur" />
         <feMerge>
@@ -140,7 +140,7 @@ function useChartDimensions(containerRef: React.RefObject<HTMLDivElement | null>
 export function DoughnutChartDemo() {
   const { mode } = useTheme()
   const { theme } = useColorTheme()
-  const { enable3D } = useDesignSystem()
+  const { effectPreset } = useDesignSystem()
   const isDark = mode === "dark"
   const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
@@ -213,7 +213,7 @@ export function DoughnutChartDemo() {
                 <GaugeGradientDefs 
                   id={gradientId} 
                   isDark={isDark} 
-                  enable3D={enable3D}
+                  effectPreset={effectPreset}
                   primaryHSL={theme.primary}
                 />
                 
@@ -328,7 +328,7 @@ export function DoughnutChartDemo() {
                       cursor: "pointer",
                       transition: "all 0.2s ease-out",
                       fill: primaryColor,
-                      filter: enable3D ? `url(#${gradientId}-glow)` : undefined,
+                      filter: effectPreset === "3d" ? `url(#${gradientId}-glow)` : undefined,
                     }}
                   />
                 </Pie>

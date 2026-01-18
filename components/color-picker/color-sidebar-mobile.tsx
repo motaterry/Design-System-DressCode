@@ -5,6 +5,7 @@ import { ColorWheel } from "./color-wheel"
 import { useColorTheme } from "./color-context"
 import { useTheme } from "@/components/theme-context"
 import { useDesignSystem } from "@/components/design-system-context"
+import { EFFECT_PRESETS, type EffectPreset } from "@/lib/effect-presets"
 import {
   hslToHex,
   formatHsl,
@@ -29,8 +30,26 @@ type TabId = "colors" | "settings" | "palettes" | "accessibility"
 
 const PERCENTAGES = [5, 20, 30, 40, 50, 60, 70, 80, 90]
 
-export function ColorSidebarMobile() {
-  const [isOpen, setIsOpen] = useState(false)
+interface ColorSidebarMobileProps {
+  /** Whether to show the mobile header (default: true) */
+  showHeader?: boolean
+  /** External scroll state for header title visibility */
+  externalScrollState?: boolean
+  /** External control for bottom sheet open state */
+  isOpen?: boolean
+  /** Callback when bottom sheet should open/close */
+  onOpenChange?: (open: boolean) => void
+}
+
+export function ColorSidebarMobile({ 
+  showHeader = true,
+  externalScrollState,
+  isOpen: externalIsOpen,
+  onOpenChange
+}: ColorSidebarMobileProps = {}) {
+  const [internalIsOpen, setInternalIsOpen] = useState(false)
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen
+  const setIsOpen = onOpenChange || setInternalIsOpen
   const [activeTab, setActiveTab] = useState<TabId>("colors")
   const [isScrolled, setIsScrolled] = useState(false)
   const [isExportModalOpen, setIsExportModalOpen] = useState(false)
@@ -39,24 +58,34 @@ export function ColorSidebarMobile() {
   const { undo, redo, canUndo, canRedo } = useColorTheme()
   const isDark = mode === "dark"
 
-  // Track scroll position to show/hide header content
+  // Track scroll position to show/hide header content (only if not using external state)
   React.useEffect(() => {
+    if (externalScrollState !== undefined) {
+      // Don't track scroll if using external state
+      return
+    }
+    
     const handleScroll = () => {
       // Threshold: when the inline title would scroll out of view (~80px from top)
       setIsScrolled(window.scrollY > 60)
     }
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  }, [externalScrollState])
+
+  // Use external scroll state if provided, otherwise use internal
+  const scrollState = externalScrollState !== undefined ? externalScrollState : isScrolled
 
   return (
     <>
-      {/* Top Header Bar */}
-      <MobileHeader 
-        onOpenControls={() => setIsOpen(true)} 
-        isDark={isDark} 
-        showTitle={isScrolled}
-      />
+      {/* Top Header Bar - only show if showHeader is true */}
+      {showHeader && (
+        <MobileHeader 
+          onOpenControls={() => setIsOpen(true)} 
+          isDark={isDark} 
+          showTitle={scrollState}
+        />
+      )}
 
       {/* Bottom Sheet */}
       <BottomSheet
@@ -169,7 +198,7 @@ export function ColorSidebarMobile() {
 }
 
 // Mobile Header with Logo and Edit Button (title appears on scroll)
-function MobileHeader({
+export function MobileHeader({
   onOpenControls,
   isDark,
   showTitle,
@@ -616,7 +645,7 @@ function ColorsTab({ isDark }: { isDark: boolean }) {
 // Settings Tab - using styles consistent with desktop
 function SettingsTab({ isDark }: { isDark: boolean }) {
   const { mode, setMode } = useTheme()
-  const { buttonTextColor, setButtonTextColor, borderRadius, setBorderRadius, enable3D, setEnable3D } =
+  const { buttonTextColor, setButtonTextColor, borderRadius, setBorderRadius, effectPreset, setEffectPreset } =
     useDesignSystem()
   const { theme } = useColorTheme()
   const primaryHex = hslToHex(theme.primary.h, theme.primary.s, theme.primary.l)
@@ -765,7 +794,7 @@ function SettingsTab({ isDark }: { isDark: boolean }) {
         </div>
       </div>
 
-      {/* 3D Effects Toggle */}
+      {/* Effect Presets */}
       <div className="flex flex-col gap-3">
         <div className="flex gap-2.5 items-center">
           <Box 
@@ -778,25 +807,54 @@ function SettingsTab({ isDark }: { isDark: boolean }) {
               isDark ? "text-[#bbb]" : "text-gray-600"
             )}
           >
-            3D Effects
+            Effect Presets
           </span>
         </div>
         
-        <Tooltip content="Enable/disable 3D shadow effects" side="top">
-          <div className="flex items-center justify-between">
-            <span className={cn(
-              "text-sm",
-              isDark ? "text-white/70" : "text-gray-600"
-            )}>
-              {enable3D ? "Enabled" : "Disabled"}
-            </span>
-            <Switch
-              checked={enable3D}
-              onCheckedChange={setEnable3D}
-              aria-label="Toggle 3D effects"
-            />
-          </div>
-        </Tooltip>
+        <div className="flex flex-col gap-2">
+          {Object.values(EFFECT_PRESETS).map((preset) => {
+            const isSelected = effectPreset === preset.id
+            return (
+              <Tooltip key={preset.id} content={preset.description} side="top">
+                <button
+                  onClick={() => setEffectPreset(preset.id)}
+                  className={cn(
+                    "flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200",
+                    isSelected
+                      ? isDark
+                        ? "bg-white/10 border border-white/20"
+                        : "bg-gray-100 border border-gray-300"
+                      : isDark
+                        ? "bg-white/5 hover:bg-white/10 border border-transparent"
+                        : "bg-gray-50 hover:bg-gray-100 border border-transparent"
+                  )}
+                  aria-label={`Select ${preset.name} preset`}
+                >
+                  <div className="flex flex-col items-start">
+                    <span className={cn(
+                      "text-sm font-medium",
+                      isDark ? "text-white" : "text-gray-900"
+                    )}>
+                      {preset.name}
+                    </span>
+                    <span className={cn(
+                      "text-xs",
+                      isDark ? "text-white/60" : "text-gray-500"
+                    )}>
+                      {preset.description}
+                    </span>
+                  </div>
+                  {isSelected && (
+                    <div className={cn(
+                      "w-2 h-2 rounded-full",
+                      isDark ? "bg-white" : "bg-gray-900"
+                    )} />
+                  )}
+                </button>
+              </Tooltip>
+            )
+          })}
+        </div>
       </div>
 
       {/* Contrast Checker */}

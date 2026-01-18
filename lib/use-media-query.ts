@@ -46,9 +46,19 @@ export function useIsMobile(): boolean {
 
 /**
  * Hook to detect if viewport is tablet-sized
- * @returns boolean - true if viewport width <= 1024px
+ * @returns boolean - true if viewport width is between 769px and 1024px
  */
 export function useIsTablet(): boolean {
+  const isMobile = useIsMobile()
+  const isTabletOrSmaller = useMediaQuery("(max-width: 1024px)")
+  return !isMobile && isTabletOrSmaller
+}
+
+/**
+ * Hook to detect if viewport should use mobile layout (mobile or tablet)
+ * @returns boolean - true if viewport width <= 1024px
+ */
+export function useIsMobileOrTablet(): boolean {
   return useMediaQuery("(max-width: 1024px)")
 }
 

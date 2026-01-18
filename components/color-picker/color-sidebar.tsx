@@ -6,6 +6,7 @@ import { ColorWheel } from "./color-wheel"
 import { useColorTheme } from "./color-context"
 import { useTheme } from "@/components/theme-context"
 import { useDesignSystem } from "@/components/design-system-context"
+import { EFFECT_PRESETS, type EffectPreset } from "@/lib/effect-presets"
 import { hslToHex, formatHsl, getContrastRatio, getAccessibleTextColor, normalizeHex } from "@/lib/color-utils"
 import { ChevronDown, Moon, Type, SquareIcon, Download, Box, Undo2, Redo2, Palette, Settings, Layers, ChevronLeft, ChevronRight, PanelLeftClose, PanelRightOpen, ShieldCheck, CornerUpLeft } from "lucide-react"
 import { useToast } from "@/components/ui/toast"
@@ -98,7 +99,7 @@ type TabId = "colors" | "settings" | "accessibility"
 export function ColorSidebar() {
   const { theme, updatePrimaryFromHex, updateComplementaryFromHex, undo, redo, canUndo, canRedo } = useColorTheme()
   const { mode, setMode } = useTheme()
-  const { buttonTextColor, setButtonTextColor, borderRadius, setBorderRadius, enable3D, setEnable3D } = useDesignSystem()
+  const { buttonTextColor, setButtonTextColor, borderRadius, setBorderRadius, effectPreset, setEffectPreset } = useDesignSystem()
   const { addToast } = useToast()
   const [activeTab, setActiveTab] = useState<TabId>("colors")
   const [isMinimized, setIsMinimized] = useState(() => {
@@ -1312,28 +1313,56 @@ export function ColorSidebar() {
                     </Tooltip>
                   </CollapsibleSection>
 
-                  {/* 3D Effects Toggle Section - Collapsible */}
+                  {/* Effect Presets Section - Collapsible */}
                   <CollapsibleSection
-                    title="3D Effects"
+                    title="Effect Presets"
                     icon={<ThreeDIcon isDark={isDark} />}
                     isExpanded={expanded.threeD}
                     onToggle={() => toggleSection("threeD")}
                     isDark={isDark}
                   >
-                    <Tooltip content="Enable/disable 3D shadow effects" side="top">
-                      <div className="flex items-center justify-between">
-                        <span className={`text-sm ${
-                          isDark ? 'text-white/70' : 'text-gray-600'
-                        }`}>
-                          {enable3D ? 'Enabled' : 'Disabled'}
-                        </span>
-                        <Switch
-                          checked={enable3D}
-                          onCheckedChange={setEnable3D}
-                          aria-label="Toggle 3D effects"
-                        />
-                      </div>
-                    </Tooltip>
+                    <div className="flex flex-col gap-2">
+                      {Object.values(EFFECT_PRESETS).map((preset) => {
+                        const isSelected = effectPreset === preset.id
+                        return (
+                          <Tooltip key={preset.id} content={preset.description} side="top">
+                            <button
+                              onClick={() => setEffectPreset(preset.id)}
+                              className={cn(
+                                "flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200",
+                                isSelected
+                                  ? isDark
+                                    ? "bg-white/10 border border-white/20"
+                                    : "bg-gray-100 border border-gray-300"
+                                  : isDark
+                                    ? "bg-white/5 hover:bg-white/10 border border-transparent"
+                                    : "bg-gray-50 hover:bg-gray-100 border border-transparent"
+                              )}
+                              aria-label={`Select ${preset.name} preset`}
+                            >
+                              <div className="flex flex-col items-start">
+                                <span className={`text-sm font-medium ${
+                                  isDark ? 'text-white' : 'text-gray-900'
+                                }`}>
+                                  {preset.name}
+                                </span>
+                                <span className={`text-xs ${
+                                  isDark ? 'text-white/60' : 'text-gray-500'
+                                }`}>
+                                  {preset.description}
+                                </span>
+                              </div>
+                              {isSelected && (
+                                <div className={cn(
+                                  "w-2 h-2 rounded-full",
+                                  isDark ? "bg-white" : "bg-gray-900"
+                                )} />
+                              )}
+                            </button>
+                          </Tooltip>
+                        )
+                      })}
+                    </div>
                   </CollapsibleSection>
 
                   {/* Contrast Checker Section - Collapsible */}

@@ -2,7 +2,7 @@
 
 import React from "react"
 import { ColorSidebar } from "@/components/color-picker/color-sidebar"
-import { ColorSidebarMobile, MobileInlineTitle } from "@/components/color-picker/color-sidebar-mobile"
+import { ColorSidebarMobile, MobileInlineTitle, MobileHeader } from "@/components/color-picker/color-sidebar-mobile"
 import { UserProfileCard } from "@/components/demo-components/user-profile-card"
 import { NotificationsPanel } from "@/components/demo-components/notifications-panel"
 import { CalendarWidget } from "@/components/demo-components/calendar-widget"
@@ -12,7 +12,7 @@ import { DoughnutChartDemo } from "@/components/demo-components/doughnut-chart"
 import { RadixThemesComponent } from "@/components/demo-components/radix-themes-component"
 import { ScrollingCardGrid } from "@/components/ui/scrolling-card-grid"
 import { useTheme } from "@/components/theme-context"
-import { useIsMobile } from "@/lib/use-media-query"
+import { useIsMobile, useIsMobileOrTablet } from "@/lib/use-media-query"
 import { Tutorial } from "@/components/onboarding/tutorial"
 import { useTutorial } from "@/lib/use-tutorial"
 import { cn } from "@/lib/utils"
@@ -21,7 +21,10 @@ export default function ControlCenterPage() {
   const { mode } = useTheme()
   const isDark = mode === "dark"
   const isMobile = useIsMobile()
+  const isMobileOrTablet = useIsMobileOrTablet()
   const { isCompleted, startTutorial } = useTutorial()
+  const [isScrolled, setIsScrolled] = React.useState(false)
+  const [isTabletSidebarOpen, setIsTabletSidebarOpen] = React.useState(false)
   const [isSidebarMinimized, setIsSidebarMinimized] = React.useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("sidebar-minimized")
@@ -52,6 +55,17 @@ export default function ControlCenterPage() {
       return () => clearTimeout(timer)
     }
   }, [isCompleted, startTutorial])
+
+  // Track scroll position for tablet header (same as mobile)
+  React.useEffect(() => {
+    if (!isMobileOrTablet) return
+    
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 60)
+    }
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [isMobileOrTablet])
   
   return (
     <div className={`min-h-screen transition-colors ${
@@ -60,9 +74,18 @@ export default function ControlCenterPage() {
         : "bg-gray-100"
     }`}>
       <div className="max-w-[1800px] mx-auto">
+        {/* Tablet Header - uses mobile top menu */}
+        {isMobileOrTablet && !isMobile && (
+          <MobileHeader 
+            onOpenControls={() => setIsTabletSidebarOpen(true)} 
+            isDark={isDark} 
+            showTitle={isScrolled}
+          />
+        )}
+        
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
-          {/* Left Column - Desktop Sidebar (hidden on mobile) */}
-          {!isMobile && (
+          {/* Left Column - Desktop Sidebar (hidden on mobile and tablet) */}
+          {!isMobileOrTablet && (
             <aside 
               className={cn(
                 isSidebarMinimized ? "lg:col-span-1" : "lg:col-span-4 xl:col-span-3"
@@ -78,12 +101,22 @@ export default function ControlCenterPage() {
           
           {/* Mobile Sidebar - Bottom Sheet */}
           {isMobile && <ColorSidebarMobile />}
+          
+          {/* Tablet Sidebar - Bottom Sheet (same as mobile, but header is shown separately) */}
+          {isMobileOrTablet && !isMobile && (
+            <ColorSidebarMobile 
+              showHeader={false}
+              externalScrollState={isScrolled}
+              isOpen={isTabletSidebarOpen}
+              onOpenChange={setIsTabletSidebarOpen}
+            />
+          )}
 
-          {/* Right Column - Demo Components (full width on mobile) */}
+          {/* Right Column - Demo Components (full width on mobile and tablet) */}
           <main 
             className={cn(
               "p-4 sm:p-6 lg:p-8",
-              isMobile 
+              isMobileOrTablet
                 ? 'col-span-1 pt-20' 
                 : isSidebarMinimized 
                   ? 'lg:col-span-11 xl:col-span-11' 
@@ -95,7 +128,7 @@ export default function ControlCenterPage() {
             {isMobile && <MobileInlineTitle isDark={isDark} />}
             
             {/* 
-              Desktop: Scrolling store display - continuous vertical scroll, pauses on hover
+              Desktop & Tablet: Scrolling store display - continuous vertical scroll, pauses on hover
               Mobile: Static grid layout
             */}
             <ScrollingCardGrid enabled={!isMobile}>

@@ -383,38 +383,62 @@ script[type="application/json"][data-nextjs-portal] {
 
 /* The scrolling content wrapper */
 .scrolling-card-content {
-  animation-name: scrollVertical;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
+  /* Layout */
+  display: flex;
+  flex-direction: column;
+  /* Responsive gap matching the card grid: gap-4 sm:gap-5 lg:gap-6 */
+  gap: 1rem; /* base: gap-4 */
+  
+  /* Enable hardware acceleration and prevent flickering */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
   will-change: transform;
+  
+  /* Smooth rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  /* Prevent layout shifts during animation */
+  contain: layout style paint;
 }
 
 /* Vertical scroll keyframe - scrolls through 50% (first set of cards) */
 @keyframes scrollVertical {
   0% {
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
   100% {
-    transform: translateY(-50%);
+    transform: translate3d(0, -50%, 0);
   }
 }
 
 /* Each set of cards in the scroll - must have identical heights for seamless loop */
 .scrolling-card-set {
-  /* No padding - gap handled by flexbox on content wrapper */
+  /* Enable hardware acceleration for each set */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform;
+  /* Prevent layout shifts */
+  contain: layout style paint;
 }
 
 /* Inner wrapper contains the actual card grid */
 .scrolling-card-inner {
   /* Ensures content is contained cleanly */
-}
-
-/* Scrolling content uses flexbox with gap matching the card grid */
-.scrolling-card-content {
-  display: flex;
-  flex-direction: column;
-  /* Responsive gap matching the card grid: gap-4 sm:gap-5 lg:gap-6 */
-  gap: 1rem; /* base: gap-4 */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  backface-visibility: hidden;
+  /* Prevent layout shifts */
+  contain: layout style paint;
 }
 
 @media (min-width: 640px) {

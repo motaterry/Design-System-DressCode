@@ -69,6 +69,118 @@ ${theme.neutralLighter.map((color, i) => `  --neutral-light-${(i + 1) * 10}: ${c
 
   /* Neutral Darker */
 ${theme.neutralDarker.map((color, i) => `  --neutral-dark-${(i + 1) * 10}: ${color};`).join('\n')}
+
+  /* Background colors - Dark Mode Default */
+  --background: 222 47% 11%;
+  --foreground: 0 0% 98%;
+
+  /* Card colors */
+  --card: 222 47% 11%;
+  --card-foreground: 0 0% 98%;
+
+  /* Border and input */
+  --border: 217 33% 17%;
+  --input: 217 33% 17%;
+  --ring: var(--color-primary);
+
+  /* Neutral color tokens - Dark Mode */
+  --neutral-50: 0 0% 98%;
+  --neutral-100: 0 0% 96%;
+  --neutral-200: 0 0% 90%;
+  --neutral-300: 0 0% 83%;
+  --neutral-400: 0 0% 64%;
+  --neutral-500: 0 0% 45%;
+  --neutral-600: 0 0% 32%;
+  --neutral-700: 0 0% 23%;
+  --neutral-800: 0 0% 15%;
+  --neutral-900: 0 0% 9%;
+  --neutral-950: 0 0% 3%;
+
+  /* Component backgrounds - Dark Mode */
+  --input-bg: 0 0% 15%;
+  --input-border: 0 0% 25%;
+  --button-outline-bg: transparent;
+  --button-outline-border: 0 0% 25%;
+  --button-ghost-bg-hover: 0 0% 20%;
+  --switch-unchecked-bg: 0 0% 20%;
+  
+  /* Toast backgrounds - Dark Mode */
+  --toast-default-bg: 0 0% 15%;
+  --toast-default-border: 0 0% 25%;
+  
+  /* Text colors - Dark Mode */
+  --text-primary: 0 0% 100%;
+  --text-secondary: 0 0% 80%;
+  --text-tertiary: 0 0% 60%;
+  --text-muted: 0 0% 50%;
+  --text-disabled: 0 0% 40%;
+  
+  /* Bar chart base colors - Dark Mode */
+  --color-primary-chart: var(--color-primary);
+  --color-complementary-chart: var(--color-complementary);
+  
+  /* Bar chart hover colors - Dark Mode */
+  --primary-l-hover: min(100%, calc(var(--primary-l) + 15%));
+  --color-primary-hover: hsl(var(--primary-h), var(--primary-s), var(--primary-l-hover));
+  --comp-l-hover: min(100%, calc(var(--comp-l) + 15%));
+  --color-complementary-hover: hsl(var(--comp-h), var(--comp-s), var(--comp-l-hover));
+  
+  /* Focus visible color - Dark Mode */
+  --primary-l-focus: max(0%, calc(var(--primary-l) - 20%));
+  --color-primary-focus: hsl(var(--primary-h), var(--primary-s), var(--primary-l-focus));
+}
+
+[data-theme="light"] {
+  /* Background colors - Light Mode */
+  --background: 0 0% 98%;
+  --foreground: 0 0% 9%;
+
+  /* Card colors - Light Mode */
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 9%;
+
+  /* Border and input - Light Mode */
+  --border: 0 0% 90%;
+  --input: 0 0% 96%;
+
+  /* Component backgrounds - Light Mode */
+  --input-bg: 0 0% 100%;
+  --input-border: 0 0% 80%;
+  --button-outline-bg: transparent;
+  --button-outline-border: 0 0% 80%;
+  --button-ghost-bg-hover: 0 0% 96%;
+  --switch-unchecked-bg: 0 0% 90%;
+  
+  /* Toast backgrounds - Light Mode */
+  --toast-default-bg: 0 0% 100%;
+  --toast-default-border: 0 0% 85%;
+  
+  /* Text colors - Light Mode */
+  --text-primary: 0 0% 9%;
+  --text-secondary: 0 0% 25%;
+  --text-tertiary: 0 0% 45%;
+  --text-muted: 0 0% 55%;
+  --text-disabled: 0 0% 65%;
+  
+  /* Primary color darker tone for labels in light mode */
+  --primary-l-darker: max(0%, calc(var(--primary-l) - 20%));
+  --color-primary-darker: hsl(var(--primary-h), var(--primary-s), var(--primary-l-darker));
+  
+  /* Bar chart base colors - Light Mode */
+  --primary-l-chart: min(100%, calc(var(--primary-l) + 15%));
+  --color-primary-chart: hsl(var(--primary-h), var(--primary-s), var(--primary-l-chart));
+  --comp-l-chart: min(100%, calc(var(--comp-l) + 15%));
+  --color-complementary-chart: hsl(var(--comp-h), var(--comp-s), var(--comp-l-chart));
+  
+  /* Bar chart hover colors - Light Mode */
+  --primary-l-hover: max(0%, calc(var(--primary-l) - 15%));
+  --color-primary-hover: hsl(var(--primary-h), var(--primary-s), var(--primary-l-hover));
+  --comp-l-hover: max(0%, calc(var(--comp-l) - 15%));
+  --color-complementary-hover: hsl(var(--comp-h), var(--comp-s), var(--comp-l-hover));
+  
+  /* Focus visible color - Light Mode */
+  --primary-l-focus: min(100%, calc(var(--primary-l) + 15%));
+  --color-primary-focus: hsl(var(--primary-h), var(--primary-s), var(--primary-l-focus));
 }
 `
   }
@@ -157,6 +269,68 @@ ${theme.neutralLighter.map((color, i) => `$neutral-light-${(i + 1) * 10}: ${colo
 
 // Neutral Darker
 ${theme.neutralDarker.map((color, i) => `$neutral-dark-${(i + 1) * 10}: ${color};`).join('\n')}
+
+// Background colors - Dark Mode Default
+$background-dark: 222 47% 11%;
+$foreground-dark: 0 0% 98%;
+
+// Card colors - Dark Mode
+$card-dark: 222 47% 11%;
+$card-foreground-dark: 0 0% 98%;
+
+// Border and input - Dark Mode
+$border-dark: 217 33% 17%;
+$input-dark: 217 33% 17%;
+
+// Component backgrounds - Dark Mode
+$input-bg-dark: 0 0% 15%;
+$input-border-dark: 0 0% 25%;
+$button-outline-bg-dark: transparent;
+$button-outline-border-dark: 0 0% 25%;
+$button-ghost-bg-hover-dark: 0 0% 20%;
+$switch-unchecked-bg-dark: 0 0% 20%;
+
+// Toast backgrounds - Dark Mode
+$toast-default-bg-dark: 0 0% 15%;
+$toast-default-border-dark: 0 0% 25%;
+
+// Text colors - Dark Mode
+$text-primary-dark: 0 0% 100%;
+$text-secondary-dark: 0 0% 80%;
+$text-tertiary-dark: 0 0% 60%;
+$text-muted-dark: 0 0% 50%;
+$text-disabled-dark: 0 0% 40%;
+
+// Background colors - Light Mode
+$background-light: 0 0% 98%;
+$foreground-light: 0 0% 9%;
+
+// Card colors - Light Mode
+$card-light: 0 0% 100%;
+$card-foreground-light: 0 0% 9%;
+
+// Border and input - Light Mode
+$border-light: 0 0% 90%;
+$input-light: 0 0% 96%;
+
+// Component backgrounds - Light Mode
+$input-bg-light: 0 0% 100%;
+$input-border-light: 0 0% 80%;
+$button-outline-bg-light: transparent;
+$button-outline-border-light: 0 0% 80%;
+$button-ghost-bg-hover-light: 0 0% 96%;
+$switch-unchecked-bg-light: 0 0% 90%;
+
+// Toast backgrounds - Light Mode
+$toast-default-bg-light: 0 0% 100%;
+$toast-default-border-light: 0 0% 85%;
+
+// Text colors - Light Mode
+$text-primary-light: 0 0% 9%;
+$text-secondary-light: 0 0% 25%;
+$text-tertiary-light: 0 0% 45%;
+$text-muted-light: 0 0% 55%;
+$text-disabled-light: 0 0% 65%;
 `
   }
 
@@ -202,6 +376,50 @@ ${theme.neutralDarker.map((color, i) => `$neutral-dark-${(i + 1) * 10}: ${color}
           acc[`${(i + 1) * 10}`] = color
           return acc
         }, {} as Record<string, string>),
+      },
+      components: {
+        dark: {
+          background: "222 47% 11%",
+          foreground: "0 0% 98%",
+          card: "222 47% 11%",
+          cardForeground: "0 0% 98%",
+          border: "217 33% 17%",
+          input: "217 33% 17%",
+          inputBg: "0 0% 15%",
+          inputBorder: "0 0% 25%",
+          buttonOutlineBg: "transparent",
+          buttonOutlineBorder: "0 0% 25%",
+          buttonGhostBgHover: "0 0% 20%",
+          switchUncheckedBg: "0 0% 20%",
+          toastDefaultBg: "0 0% 15%",
+          toastDefaultBorder: "0 0% 25%",
+          textPrimary: "0 0% 100%",
+          textSecondary: "0 0% 80%",
+          textTertiary: "0 0% 60%",
+          textMuted: "0 0% 50%",
+          textDisabled: "0 0% 40%",
+        },
+        light: {
+          background: "0 0% 98%",
+          foreground: "0 0% 9%",
+          card: "0 0% 100%",
+          cardForeground: "0 0% 9%",
+          border: "0 0% 90%",
+          input: "0 0% 96%",
+          inputBg: "0 0% 100%",
+          inputBorder: "0 0% 80%",
+          buttonOutlineBg: "transparent",
+          buttonOutlineBorder: "0 0% 80%",
+          buttonGhostBgHover: "0 0% 96%",
+          switchUncheckedBg: "0 0% 90%",
+          toastDefaultBg: "0 0% 100%",
+          toastDefaultBorder: "0 0% 85%",
+          textPrimary: "0 0% 9%",
+          textSecondary: "0 0% 25%",
+          textTertiary: "0 0% 45%",
+          textMuted: "0 0% 55%",
+          textDisabled: "0 0% 65%",
+        },
       },
       spacing: {
         borderRadius: borderRadius,

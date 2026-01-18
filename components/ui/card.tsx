@@ -4,33 +4,39 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import { useTheme } from "@/components/theme-context"
 import { useDesignSystem } from "@/components/design-system-context"
-import { use3DEffectsNeutral } from "@/lib/use-3d-effects"
+import { useNeutralEffectPresets } from "@/lib/use-effect-presets"
 
 const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
   const { mode } = useTheme()
-  const { enable3D } = useDesignSystem()
   const isDark = mode === "dark"
   
-  // Get neutral 3D effects for cards
-  const { effects, boxShadow, boxShadowHover, isEnabled: is3DEnabled } = use3DEffectsNeutral(
-    isDark,
+  // Get neutral effect styles for cards
+  const { 
+    styles,
+    boxShadow, 
+    boxShadowHover, 
+    isEnabled: isEffectEnabled,
+    background,
+    backdropFilter,
+    border
+  } = useNeutralEffectPresets(
     { intensity: 0.7 }
   )
   
-  // Base colors (fallback when 3D is disabled)
+  // Base colors (fallback when effects are disabled)
   const baseBg = isDark ? "bg-neutral-900/90" : "bg-white"
   const baseBorder = isDark ? "border-white/10" : "border-gray-200"
   const baseHoverBorder = isDark ? "hover:border-white/20" : "hover:border-gray-300"
   
-  // Apply 3D effects when enabled
-  const shouldApply3D = is3DEnabled && enable3D && effects
+  // Apply effects when enabled
+  const shouldApplyEffects = isEffectEnabled && styles
   
-  // Build 3D border effect using inset shadows for smooth gradient transition
-  // Simulates light from above - bright top edge fading to dark bottom edge
-  const insetBorderShadow = shouldApply3D
+  // Build border effect using inset shadows for 3D preset (smooth gradient transition)
+  // For other presets, use the border from styles
+  const insetBorderShadow = shouldApplyEffects && !styles.border
     ? isDark
       ? [
           // Top highlight - bright white glow on top edge
@@ -50,25 +56,25 @@ const Card = React.forwardRef<
         ].join(", ")
     : ""
   
-  // Combine external shadow with inset border shadow
-  const combinedShadow = shouldApply3D
+  // Combine external shadow with inset border shadow (only for 3D preset)
+  const combinedShadow = shouldApplyEffects && insetBorderShadow
     ? `${boxShadow}, ${insetBorderShadow}`
     : boxShadow
     
-  const combinedShadowHover = shouldApply3D
+  const combinedShadowHover = shouldApplyEffects && insetBorderShadow
     ? `${boxShadowHover}, ${insetBorderShadow}`
     : boxShadowHover
   
-  // Handle hover state for 3D effects
+  // Handle hover state for effects
   const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (shouldApply3D && combinedShadowHover) {
+    if (shouldApplyEffects && combinedShadowHover) {
       e.currentTarget.style.boxShadow = combinedShadowHover
     }
     props.onMouseEnter?.(e)
   }
   
   const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (shouldApply3D && combinedShadow) {
+    if (shouldApplyEffects && combinedShadow) {
       e.currentTarget.style.boxShadow = combinedShadow
     }
     props.onMouseLeave?.(e)
@@ -78,26 +84,30 @@ const Card = React.forwardRef<
     <div
       ref={ref}
       className={cn(
-        "backdrop-blur-sm transition-all duration-200 ease-out hover:-translate-y-0.5",
-        // Only apply base border classes when 3D is disabled
-        !shouldApply3D && "border",
-        !shouldApply3D && baseBorder,
-        !shouldApply3D && baseHoverBorder,
-        // Base background only when 3D is disabled
-        !shouldApply3D && baseBg,
+        "transition-all duration-200 ease-out hover:-translate-y-0.5",
+        // Only apply base border classes when effects are disabled or no border from preset
+        !shouldApplyEffects && "border",
+        !shouldApplyEffects && baseBorder,
+        !shouldApplyEffects && baseHoverBorder,
+        // Base background only when effects are disabled
+        !shouldApplyEffects && baseBg,
         // Text colors
         isDark ? "text-white" : "text-gray-900",
-        // Shadow classes (only when 3D is disabled)
-        !shouldApply3D && "shadow-sm",
-        !shouldApply3D && "hover:shadow-md",
+        // Shadow classes (only when effects are disabled)
+        !shouldApplyEffects && "shadow-sm",
+        !shouldApplyEffects && "hover:shadow-md",
         className
       )}
       style={{
         borderRadius: "var(--border-radius)",
-        // Apply 3D background gradient
-        ...(shouldApply3D && effects ? { background: effects.gradient } : {}),
-        // Apply combined shadow (external + inset border)
-        ...(shouldApply3D ? { boxShadow: combinedShadow } : {}),
+        // Apply effect background
+        ...(shouldApplyEffects ? { background: background } : {}),
+        // Apply combined shadow (external + inset border for 3D, or just external for others)
+        ...(shouldApplyEffects ? { boxShadow: combinedShadow } : {}),
+        // Apply backdrop filter for glassmorphism
+        ...(shouldApplyEffects && backdropFilter ? { backdropFilter: backdropFilter } : {}),
+        // Apply border from preset (for glassmorphism)
+        ...(shouldApplyEffects && border ? { border: border } : {}),
         ...props.style, // Merge with any existing styles
       }}
       onMouseEnter={handleMouseEnter}

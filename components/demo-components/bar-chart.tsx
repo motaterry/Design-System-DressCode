@@ -40,7 +40,7 @@ interface GradientBarProps {
 }
 
 const GradientBar = ({ x = 0, y = 0, width = 0, height = 0, chartId, isPrimary, isDark }: GradientBarProps) => {
-  const { enable3D } = useDesignSystem()
+  const { effectPreset } = useDesignSystem()
   const { theme } = useColorTheme()
   
   if (height <= 0 || width <= 0) return null
@@ -57,11 +57,11 @@ const GradientBar = ({ x = 0, y = 0, width = 0, height = 0, chartId, isPrimary, 
   // Get color values for primary or complementary
   const colorHSL = isPrimary ? theme.primary : theme.complementary
   
-  // Base fill color (fallback when 3D is off)
+  // Base fill color (fallback when effects are off)
   const baseFill = isPrimary ? "var(--color-primary)" : "var(--color-complementary)"
   
-  // When 3D is enabled, use 3D effects
-  if (enable3D) {
+  // When 3D preset is enabled, use 3D effects
+  if (effectPreset === "3d") {
     const effects = get3DEffects(colorHSL.h, colorHSL.s, colorHSL.l, { intensity: 1.0 })
     
     // Unique ID for linear gradient and filters
