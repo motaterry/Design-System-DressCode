@@ -702,7 +702,7 @@ export function ColorSidebar() {
                   }`}
                   style={{ fontFamily: "'Aktiv Grotesk Ex', sans-serif" }}
                 >
-                  by Tercio Mota
+                  DressCode Design System
                 </span>
               </div>
             </div>
